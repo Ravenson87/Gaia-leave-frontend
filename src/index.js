@@ -3,12 +3,18 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {store} from './store/store';
+import {Provider} from 'react-redux';
+import PersistProvider from "./store/providers/persist-provider";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+const root = document.getElementById('root');
+const rootElement = ReactDOM.createRoot(root);
+rootElement.render(
+    <Provider store={store}>
+        <PersistProvider>
+            <App />
+        </PersistProvider>
+    </Provider>
 );
 
 // If you want to start measuring performance in your app, pass a function
