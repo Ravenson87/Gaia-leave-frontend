@@ -1,58 +1,157 @@
-import Sidebar from "../../components/Sidebar";
 import * as React from 'react';
-import { DataGrid } from '@mui/x-data-grid';
+import {DataGrid} from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {deleteRole, getRole, updateRole} from "../../api/role";
+import {Button, IconButton, Tooltip} from "@mui/material";
+import CreateRole from "../dev_dashboard/role/developer-dashboard-role/create";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import AlertDialog from "../../components/Modal";
 
 const Home = () => {
-    const [open, setOpen] = useState([]);
+    const [editData, setEditData] = useState(null);
+    const [createModal, setCreateModal] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [data, setData] = useState('');
+    const [role, setRole] = useState([]);
     const columns = [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'firstName', headerName: 'First name', width: 130 },
-        { field: 'lastName', headerName: 'Last name', width: 130 },
+        {field: 'id', headerName: 'ID', width: 70},
+        {field: 'name', headerName: 'Name', width: 150, editable: true},
+        {field: 'description', headerName: 'Description', width: 250, editable: true},
         {
-            field: 'age',
-            headerName: 'Age',
-            type: 'number',
-            width: 90,
+            field: 'created_by',
+            headerName: 'Created By',
+            width: 150,
         },
         {
-            field: 'fullName',
-            headerName: 'Full name',
-            description: 'This column has a value getter and is not sortable.',
-            sortable: false,
-            width: 160,
-            valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
+            field: 'created_date',
+            headerName: 'Created Date',
+            width: 200,
         },
-    ];
+        {
+            field: 'last_modified_by',
+            headerName: 'Last Modified By',
+            width: 150,
+        },
+        {
+            field: 'last_modified_date',
+            headerName: 'Last Modified Date',
+            width: 200,
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 500,
+            renderCell: (params) => {
+                return (
+                    <>
+                        <Tooltip title="Edit">
+                            <IconButton color="secondary" onClick={() => handleEdit(params.row)}>
+                                <EditIcon/>
+                            </IconButton>
+                        </Tooltip>
 
-    const rows = [
-        { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-        { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-        { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-        { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-        { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-        { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-        { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-        { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-        { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+                        <Tooltip title="Delete" className='mx-lg-2'>
+                            <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
+                                <DeleteIcon/>
+                            </IconButton>
+                        </Tooltip>
+                    </>
+                );
+            }
+        }
     ];
+    const paginationModel = {page: 0, pageSize: 5};
 
-    const paginationModel = { page: 0, pageSize: 5 };
+    useEffect(() => {
+        get();
+    }, []);
+
+    function get() {
+        getRole().then((response) => {
+            if (response.status === 200) {
+                setRole(response.data);
+            }
+        })
+    }
+
+    function handleEdit(row) {
+        if (editData?.id) {
+            setData({
+                header: "Edit role",
+                message: "Are you sure you want to edit this role?",
+                type: 0,
+                data: editData
+            });
+            setOpen(true);
+        }
+    }
+
+    function handleDelete(row) {
+        setData({
+            header: "Delete role",
+            message: "Are you sure you want to delete this role?",
+            type: 1,
+            data: row
+        });
+        setOpen(true);
+    }
+
+    function handleRowEdit(row) {
+        setEditData(row);
+    }
+
+    function agreement(data) {
+        if (data.type === 0) {
+            updateRoleFunc(data.data);
+        } else {
+            deleteRoleFunc(data.data)
+        }
+    }
+
+    function updateRoleFunc(data) {
+        const {name, description, id} = data;
+        const json = {
+            name: name,
+            description: description,
+        }
+        updateRole(id, json).then((response) => {
+            setOpen(false);
+            setCreateModal(false);
+            get();
+        })
+    }
+
+    function deleteRoleFunc(id) {
+        deleteRole(id).then((response) => {
+            setOpen(false);
+            setCreateModal(false);
+            get();
+        })
+    }
+
     return (
         <>
-            <Paper sx={{ height: 400, width: '100%' }}>
-                <DataGrid
-                    rows={rows}
-                    columns={columns}
-                    initialState={{ pagination: { paginationModel } }}
-                    pageSizeOptions={[5, 10]}
-                    checkboxSelection
-                    sx={{ border: 0 }}
-                />
-            </Paper>
+            {!createModal && (
+                <>
+                    <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
+                    <Paper sx={{height: 400, width: '100%'}}>
+                        <DataGrid
+                            rows={role}
+                            columns={columns}
+                            initialState={{pagination: {paginationModel}}}
+                            pageSizeOptions={[5, 10]}
+                            checkboxSelection
+                            sx={{border: 0}}
+                            processRowUpdate={handleRowEdit}
+                        />
+                    </Paper>
+                </>
+            )}
+            {createModal && (<CreateRole setCreateModal={setCreateModal}/>)}
+            <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
         </>
     )
 }
 export default Home
-
