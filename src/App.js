@@ -1,6 +1,9 @@
 import React, {Suspense} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './scss/style.scss';
 import {BrowserRouter, Route, Routes} from "react-router-dom";
+import PrivateRoutes from "./PrivateRoutes";
+import DefaultLayout from "./layout/DefaultLayout";
 
 const loading = (
     <div className="pt-3 text-center">
@@ -20,7 +23,9 @@ const App = () => {
             <Suspense fallback={loading}>
                 <Routes>
                     <Route path="/" element={<Login/>}/>
-                    <Route path="/home" element={<Home/>}/>
+                    <Route element={<PrivateRoutes/>}>
+                        <Route path="/*" element={<DefaultLayout/>}/>
+                    </Route>
                 </Routes>
             </Suspense>
         </BrowserRouter>

@@ -179,8 +179,8 @@ const Login = () => {
                                 boxShadow: '0 6px 15px rgba(102, 126, 234, 0.6)',
                             }
                         }}
-                        onClick={() => {
-                            login()
+                        onClick={async () => {
+                            await login();
                         }}
                     >
                         Sign In
