@@ -1,6 +1,11 @@
+import * as React from 'react';
+
 const Menu = () => {
 
-    return (<></>);
+    return (
+        <>
+        </>
+    );
 
 }
 export default Menu;

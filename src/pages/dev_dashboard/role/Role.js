@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import {useEffect, useState} from "react";
 import {deleteRole, getRole, updateRole} from "../../../api/role";
 import {Button, IconButton, Tooltip} from "@mui/material";
-import CreateRole from "/developer-dashboard-role/create";
+import CreateRole from "../role/developer-dashboard-role/create";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AlertDialog from "../../../components/Modal";
@@ -16,7 +16,7 @@ const Role = () => {
     const [data, setData] = useState('');
     const [role, setRole] = useState([]);
     const columns = [
-        {field: 'id', headerName: 'ID', width: 70},
+        {field: 'id', headerName: 'ID', width: 50},
         {field: 'name', headerName: 'Name', width: 150, editable: true},
         {field: 'description', headerName: 'Description', width: 250, editable: true},
         {
@@ -142,7 +142,6 @@ const Role = () => {
                             columns={columns}
                             initialState={{pagination: {paginationModel}}}
                             pageSizeOptions={[5, 10]}
-                            checkboxSelection
                             sx={{border: 0}}
                             processRowUpdate={handleRowEdit}
                         />

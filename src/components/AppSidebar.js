@@ -1,50 +1,47 @@
-import React, {useEffect, useState} from 'react'
-import {useDispatch, useSelector} from 'react-redux'
+import React from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 
-import {CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler} from '@coreui/react'
+import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
 
-import {AppSidebarNav} from './AppSidebarNav'
+import { AppSidebarNav } from './AppSidebarNav'
 
+import { logoNegative } from 'src/assets/brand/logo-negative'
+import { sygnet } from 'src/assets/brand/sygnet'
 
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
+
 // sidebar nav config
 import navigation from '../_nav'
-import {setShowSidebar} from "../state/slices/sidebar/sidebarSlice";
-
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
-  const sidebarShow = useSelector((state) => state.sidebar.sidebarShow);
-  const user = useSelector((state) => state.currentUser.currentUser);
-  const [filteredMenuData, setFilteredMenuData] = useState(null);
-
-  useEffect(() => {
-
-  }, []);
+  const unfoldable = useSelector((state) => state.sidebarUnfoldable)
+  const sidebarShow = useSelector((state) => state.sidebarShow)
 
   return (
-    <>
-      <CSidebar
-        position="fixed"
-        visible={sidebarShow}
-      >
-        <CSidebarBrand className="d-none d-md-flex" to="/">
-
-        </CSidebarBrand>
-        <CSidebarNav>
-          <SimpleBar>
-            <AppSidebarNav items={navigation} />
-          </SimpleBar>
-        </CSidebarNav>
-        <CSidebarToggler
-          className="d-none d-lg-flex"
-          onClick={() => {
-            dispatch(setShowSidebar(!sidebarShow))
-          }}
-        />
-      </CSidebar>
-    </>
+    <CSidebar
+      position="fixed"
+      unfoldable={unfoldable}
+      visible={sidebarShow}
+      onVisibleChange={(visible) => {
+        dispatch({ type: 'set', sidebarShow: visible })
+      }}
+    >
+      <CSidebarBrand className="d-none d-md-flex" to="/">
+      <h1>Gaia leave</h1>
+      </CSidebarBrand>
+      <CSidebarNav>
+        <SimpleBar>
+          <AppSidebarNav items={navigation} />
+        </SimpleBar>
+      </CSidebarNav>
+      <CSidebarToggler
+        className="d-none d-lg-flex"
+        onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
+      />
+    </CSidebar>
   )
 }
 
