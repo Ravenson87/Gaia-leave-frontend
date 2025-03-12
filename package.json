@@ -31,6 +31,7 @@
     "@coreui/utils": "^2.0.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/base": "^5.0.0-beta.69",
     "@mui/icons-material": "^6.4.7",
     "@mui/material": "^6.4.7",
     "@mui/x-data-grid": "^7.27.3",
