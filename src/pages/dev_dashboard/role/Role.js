@@ -2,14 +2,14 @@ import * as React from 'react';
 import {DataGrid} from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import {useEffect, useState} from "react";
-import {deleteRole, getRole, updateRole} from "../../api/role";
+import {deleteRole, getRole, updateRole} from "../../../api/role";
 import {Button, IconButton, Tooltip} from "@mui/material";
-import CreateRole from "../dev_dashboard/role/developer-dashboard-role/create";
+import CreateRole from "/developer-dashboard-role/create";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import AlertDialog from "../../components/Modal";
+import AlertDialog from "../../../components/Modal";
 
-const Home = () => {
+const Role = () => {
     const [editData, setEditData] = useState(null);
     const [createModal, setCreateModal] = useState(false);
     const [open, setOpen] = useState(false);
@@ -154,4 +154,4 @@ const Home = () => {
         </>
     )
 }
-export default Home
+export default Role

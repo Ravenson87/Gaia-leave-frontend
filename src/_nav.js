@@ -24,13 +24,13 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Accordion',
-        to: '/base/accordion',
+        name: 'Role',
+        to: '/role',
       },
       {
         component: CNavItem,
-        name: 'Breadcrumb',
-        to: '/base/breadcrumbs',
+        name: 'Menu',
+        to: '/menu',
       },
       {
         component: CNavItem,

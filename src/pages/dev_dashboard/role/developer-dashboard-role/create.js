@@ -4,8 +4,7 @@ import {useState} from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import {createRole} from "../../../../api/role";
-
-const CreateRole = ({setCreateModal}) => {
+const CreateRole = ({setCreateModal, get}) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState("");
     const [error, setError] = useState(false);
@@ -23,6 +22,7 @@ const CreateRole = ({setCreateModal}) => {
 
         createRole(jsonData).then((response) => {
             if (response.status === 201) {
+                get();
                 setCreateModal(false);
             }
         })
