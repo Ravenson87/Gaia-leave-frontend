@@ -1,25 +1,24 @@
-import * as React from 'react';
 import {Button, IconButton, Tooltip} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import Paper from "@mui/material/Paper";
 import {DataGrid} from "@mui/x-data-grid";
+import * as React from "react";
 import {useEffect, useState} from "react";
-import {deleteMenu, getMenu, updateMenu} from "../../../api/menu";
-import CreateMenu from "./developer-dashboard-menu/create";
+import {deleteJobPosition, getJobPosition, updateJobPosition} from "../../../api/jobPosition";
+import CreateJobPosition from "./developer-dashboard-job-position/create";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {deleteMenu, updateMenu} from "../../../api/menu";
 import AlertDialog from "../../../components/Modal";
 
-
-const Menu = () => {
+const JobPosition = () => {
   const [createModal, setCreateModal] = useState(false);
-  const [menu, setMenu] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [data, setData] = useState('');
+  const [jobPosition, setJobPosition] = useState([]);
   const [editData, setEditData] = useState(null);
+  const [data, setData] = useState('');
+  const [open, setOpen] = useState(false);
 
   const columns = [
-    {field: 'menu_number', headerName: 'Menu number', width: 50},
-    {field: 'name', headerName: 'Name', width: 150, editable: true},
+    {field: 'title', headerName: 'Title', width: 150, editable: true},
     {field: 'description', headerName: 'Description', width: 250, editable: true},
     {
       field: 'created_by',
@@ -63,7 +62,8 @@ const Menu = () => {
         );
       }
     }
-  ];
+  ]
+
   const paginationModel = {page: 0, pageSize: 5};
 
   useEffect(() => {
@@ -71,9 +71,9 @@ const Menu = () => {
   }, []);
 
   function get(){
-    getMenu().then(response => {
+    getJobPosition().then(response => {
       if(response.status === 200){
-        setMenu(response.data);
+        setJobPosition(response.data);
       }
     })
   }
@@ -82,8 +82,8 @@ const Menu = () => {
     if (editData?.id) {
       console.log(editData.id);
       setData({
-        header: "Edit menu",
-        message: "Are you sure you want to edit this menu?",
+        header: "Edit Job Position",
+        message: "Are you sure you want to edit this Job Position?",
         type: 0,
         data: editData
       });
@@ -91,31 +91,31 @@ const Menu = () => {
     }
   }
 
+  function handleRowEdit(row){
+    setEditData(row);
+  }
+
   function handleDelete(row){
     setData({
-      header: "Delete menu",
-      message: "Are you sure you want to delete this menu?",
+      header: "Delete Job Position",
+      message: "Are you sure you want to delete this Job Position?",
       type: 1,
       data: row
     });
     setOpen(true);
   }
 
-  function handleRowEdit(row){
-    setEditData(row);
-  }
-
   function agreement(data) {
     if (data.type === 0) {
       console.log(data);
-      updateMenuFunc(data.data);
+      updateJobPositionFunc(data.data);
     } else {
       console.log(data);
-      deleteMenuFunc(data.data)
+      deleteJobPositionFunc(data.data)
     }
   }
 
-  function updateMenuFunc(data) {
+  function updateJobPositionFunc(data) {
     const {menu_number ,name, description, id} = data;
     const json = {
       menu_number : menu_number,
@@ -131,37 +131,39 @@ const Menu = () => {
     })
   }
 
-  function deleteMenuFunc(id) {
-    deleteMenu(id).then((response) => {
+  function deleteJobPositionFunc(id) {
+    deleteJobPosition(id).then((response) => {
       setOpen(false);
       setCreateModal(false);
       get();
     })
   }
 
-    return (
-        <>
-          {
-            !createModal && (
-              <>
-                <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
-                <Paper sx={{height: 400, width: '100%'}}>
-                  <DataGrid
-                    rows={menu}
-                    columns={columns}
-                    initialState={{pagination: {paginationModel}}}
-                    pageSizeOptions={[5, 10]}
-                    sx={{border: 0}}
-                    processRowUpdate={handleRowEdit}
-                  />
-                </Paper>
-              </>
-            )}
-          {createModal && (<CreateMenu setVisible={setCreateModal} get={get} />)}
-          <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
+  return (
+    <>
+      {
+        !createModal && (
+          <>
+            <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
+            <Paper sx={{height: 400, width: '100%'}}>
+              <DataGrid
+                rows={jobPosition}
+                columns={columns}
+                initialState={{pagination: {paginationModel}}}
+                pageSizeOptions={[5, 10]}
+                sx={{border: 0}}
+                processRowUpdate={handleRowEdit}
+              />
+            </Paper>
+          </>
+        )}
+      {createModal && (<CreateJobPosition setVisible={setCreateModal} get={get}/>)}
+      <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
 
-        </>
-    );
+
+    </>
+  );
 
 }
-export default Menu;
+
+export default JobPosition;
