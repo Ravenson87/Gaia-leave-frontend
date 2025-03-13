@@ -70,10 +70,12 @@ const Menu = () => {
     get();
   }, []);
 
-  function get(){
+  function get() {
     getMenu().then(response => {
-      if(response.status === 200){
+      if (response.status === 200) {
         setMenu(response.data);
+      } else if (response.status === 204) {
+        setMenu([]);
       }
     })
   }
@@ -91,7 +93,7 @@ const Menu = () => {
     }
   }
 
-  function handleDelete(row){
+  function handleDelete(row) {
     setData({
       header: "Delete menu",
       message: "Are you sure you want to delete this menu?",
@@ -101,7 +103,7 @@ const Menu = () => {
     setOpen(true);
   }
 
-  function handleRowEdit(row){
+  function handleRowEdit(row) {
     setEditData(row);
   }
 
@@ -116,9 +118,9 @@ const Menu = () => {
   }
 
   function updateMenuFunc(data) {
-    const {menu_number ,name, description, id} = data;
+    const {menu_number, name, description, id} = data;
     const json = {
-      menu_number : menu_number,
+      menu_number: menu_number,
       name: name,
       description: description,
     }
@@ -139,29 +141,29 @@ const Menu = () => {
     })
   }
 
-    return (
-        <>
-          {
-            !createModal && (
-              <>
-                <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
-                <Paper sx={{height: 400, width: '100%'}}>
-                  <DataGrid
-                    rows={menu}
-                    columns={columns}
-                    initialState={{pagination: {paginationModel}}}
-                    pageSizeOptions={[5, 10]}
-                    sx={{border: 0}}
-                    processRowUpdate={handleRowEdit}
-                  />
-                </Paper>
-              </>
-            )}
-          {createModal && (<CreateMenu setVisible={setCreateModal} get={get} />)}
-          <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
+  return (
+    <>
+      {
+        !createModal && (
+          <>
+            <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
+            <Paper sx={{height: 400, width: '100%'}}>
+              <DataGrid
+                rows={menu}
+                columns={columns}
+                initialState={{pagination: {paginationModel}}}
+                pageSizeOptions={[5, 10]}
+                sx={{border: 0}}
+                processRowUpdate={handleRowEdit}
+              />
+            </Paper>
+          </>
+        )}
+      {createModal && (<CreateMenu setVisible={setCreateModal} get={get}/>)}
+      <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
 
-        </>
-    );
+    </>
+  );
 
 }
 export default Menu;

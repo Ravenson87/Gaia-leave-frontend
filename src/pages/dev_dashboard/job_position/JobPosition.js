@@ -70,17 +70,18 @@ const JobPosition = () => {
     get();
   }, []);
 
-  function get(){
+  function get() {
     getJobPosition().then(response => {
-      if(response.status === 200){
+      if (response.status === 200) {
         setJobPosition(response.data);
+      } else if (response.status === 204) {
+        setJobPosition([]);
       }
     })
   }
 
   function handleEdit(row) {
     if (editData?.id) {
-      console.log(editData.id);
       setData({
         header: "Edit Job Position",
         message: "Are you sure you want to edit this Job Position?",
@@ -91,11 +92,11 @@ const JobPosition = () => {
     }
   }
 
-  function handleRowEdit(row){
+  function handleRowEdit(row) {
     setEditData(row);
   }
 
-  function handleDelete(row){
+  function handleDelete(row) {
     setData({
       header: "Delete Job Position",
       message: "Are you sure you want to delete this Job Position?",
@@ -107,24 +108,20 @@ const JobPosition = () => {
 
   function agreement(data) {
     if (data.type === 0) {
-      console.log(data);
       updateJobPositionFunc(data.data);
     } else {
-      console.log(data);
       deleteJobPositionFunc(data.data)
     }
   }
 
   function updateJobPositionFunc(data) {
-    const {menu_number ,name, description, id} = data;
+    const {title, description, id} = data;
     const json = {
-      menu_number : menu_number,
-      name: name,
-      description: description,
+      title: title,
+      description: description
     }
-    console.log(json);
-    updateMenu(id, json).then((response) => {
-      console.log('Update menu');
+
+    updateJobPosition(id, json).then((response) => {
       setOpen(false);
       setCreateModal(false);
       get();
@@ -135,6 +132,7 @@ const JobPosition = () => {
     deleteJobPosition(id).then((response) => {
       setOpen(false);
       setCreateModal(false);
+      console.log("No. 1: deleteJobPosition")
       get();
     })
   }

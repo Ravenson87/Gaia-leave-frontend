@@ -20,11 +20,15 @@ const _nav = [
         name: 'Menu',
         to: '/menu',
       },
-
       {
         component: CNavItem,
         name: 'Job Position',
         to: '/job-position',
+      },
+      {
+        component: CNavItem,
+        name: 'User',
+        to: '/user',
       }
     ],
   }

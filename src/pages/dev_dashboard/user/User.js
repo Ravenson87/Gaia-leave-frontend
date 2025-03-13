@@ -2,23 +2,40 @@ import * as React from 'react';
 import {DataGrid} from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import {useEffect, useState} from "react";
-import {deleteRole, getRole, updateRole} from "../../../api/role";
+import {deleteUser, getUser, updateUser} from "../../../api/user";
 import {Button, IconButton, Tooltip} from "@mui/material";
-import CreateRole from "../role/developer-dashboard-role/create";
+import CreateRole from "../user/developer-dashboard-user/create";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AlertDialog from "../../../components/Modal";
+import CreateUser from "../user/developer-dashboard-user/create";
+import {getJobPosition} from "../../../api/jobPosition";
+import {getRole} from "../../../api/role";
 
-const Role = () => {
+const User = () => {
   const [editData, setEditData] = useState(null);
   const [createModal, setCreateModal] = useState(false);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState('');
-  const [role, setRole] = useState([]);
+  const [user, setUser] = useState([]);
+  const [jobPositionData, setJobPositionData] = useState(null);
+  const [roleData, setRoleData] = useState(null);
   const columns = [
     {field: 'id', headerName: 'ID', width: 50},
-    {field: 'name', headerName: 'Name', width: 150, editable: true},
-    {field: 'description', headerName: 'Description', width: 250, editable: true},
+    {field: 'first_name', headerName: 'First name', width: 150, editable: true},
+    {field: 'last_name', headerName: 'Last Name', width: 150, editable: true},
+    {field: 'username', headerName: 'Username', width: 150, editable: true},
+    {field: 'email', headerName: 'Email', width: 150, editable: true},
+    {
+      field: 'role', headerName: 'Role', width: 150, editable: true,
+      valueGetter: (params) => {
+        return params?.name ? params?.name : 'N/A'
+      }
+    },
+    {
+      field: 'job_position_id', headerName: 'Job position', width: 150, editable: true,
+      valueGetter: (params) => getJobPositionName(params)
+    },
     {
       field: 'created_by',
       headerName: 'Created By',
@@ -66,23 +83,37 @@ const Role = () => {
 
   useEffect(() => {
     get();
+    fetchData();
   }, []);
 
   function get() {
-    getRole().then((response) => {
+    getUser().then((response) => {
       if (response.status === 200) {
-        setRole(response.data);
+        setUser(response.data);
       } else if (response.status === 204) {
-        setRole([]);
+        setUser([]);
       }
     })
   }
 
-  function handleEdit(row) {
+  function fetchData() {
+    getJobPosition().then(r => {
+      if (r.status === 200) {
+        setJobPositionData(r.data)
+      }
+    });
+  }
+
+  function getJobPositionName(job_position_id) {
+    const jobPosition = jobPositionData.find(r => r.id === job_position_id);
+    return jobPosition ? jobPosition.title : "N/A";
+  }
+
+  function handleEdit() {
     if (editData?.id) {
       setData({
-        header: "Edit role",
-        message: "Are you sure you want to edit this role?",
+        header: "Edit user",
+        message: "Are you sure you want to edit this user?",
         type: 0,
         data: editData
       });
@@ -92,8 +123,8 @@ const Role = () => {
 
   function handleDelete(row) {
     setData({
-      header: "Delete role",
-      message: "Are you sure you want to delete this role?",
+      header: "Delete user",
+      message: "Are you sure you want to delete this user?",
       type: 1,
       data: row
     });
@@ -106,27 +137,27 @@ const Role = () => {
 
   function agreement(data) {
     if (data.type === 0) {
-      updateRoleFunc(data.data);
+      updateUserFunc(data.data);
     } else {
-      deleteRoleFunc(data.data)
+      deleteUserFunc(data.data)
     }
   }
 
-  function updateRoleFunc(data) {
+  function updateUserFunc(data) {
     const {name, description, id} = data;
     const json = {
       name: name,
       description: description,
     }
-    updateRole(id, json).then((response) => {
+    updateUser(id, json).then((response) => {
       setOpen(false);
       setCreateModal(false);
       get();
     })
   }
 
-  function deleteRoleFunc(id) {
-    deleteRole(id).then((response) => {
+  function deleteUserFunc(id) {
+    deleteUser(id).then((response) => {
       setOpen(false);
       setCreateModal(false);
       get();
@@ -140,7 +171,7 @@ const Role = () => {
           <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
           <Paper sx={{height: 400, width: '100%'}}>
             <DataGrid
-              rows={role}
+              rows={user}
               columns={columns}
               initialState={{pagination: {paginationModel}}}
               pageSizeOptions={[5, 10]}
@@ -150,9 +181,9 @@ const Role = () => {
           </Paper>
         </>
       )}
-      {createModal && (<CreateRole setCreateModal={setCreateModal} get={get}/>)}
+      {createModal && (<CreateUser setCreateModal={setCreateModal} get={get}/>)}
       <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
     </>
   )
 }
-export default Role
+export default User
