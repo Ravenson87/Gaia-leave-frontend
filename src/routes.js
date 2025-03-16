@@ -6,6 +6,7 @@ const Role = React.lazy(() => import("./pages/dev_dashboard/role/Role"));
 const JobPosition = React.lazy(() => import("./pages/dev_dashboard/job_position/JobPosition"));
 const User = React.lazy(() => import("./pages/dev_dashboard/user/User"));
 const MenuRole = React.lazy(() => import("./pages/dev_dashboard/assigned_accessibility/MenuRole"));
+const DaysOffManagement = React.lazy(() => import("./pages/days-off-management/DaysOffManagement"));
 
 const routes = [
   {path: '/home', exact: true, name: 'Home', element: Home},
@@ -14,5 +15,6 @@ const routes = [
   {path: '/job-position', exact: true, name: 'Job Position', element: JobPosition},
   {path: '/user', exact: true, name: 'User', element: User},
   {path: '/menu/role', name: 'Menu Role', element: MenuRole},
+  {path: 'days-off-management', name: 'Days off management', element: DaysOffManagement},
 ]
 export default routes;

@@ -36,6 +36,19 @@ const _nav = [
         to: '/menu/role',
       }
     ],
+  },
+  {
+    component: CNavGroup,
+    name: 'Calendar',
+    to: '/calendar',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Days off management',
+        to: '/days-off-management',
+      }
+    ],
   }
 ]
 
