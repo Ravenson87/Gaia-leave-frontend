@@ -19,7 +19,52 @@ const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const secondArray = [
+    {
+      menu_number: 2,
+      name: 'Developer dashboard',
+      to: '/role',
+    },
+    {
+      menu_number: 1,
+      name: 'Role',
+      to: '/role',
+    },
+    {
+      menu_number: 2,
+      name: 'Menu',
+      to: '/role',
+    },
+    {
+      menu_number: 2,
+      name: 'Calendar',
+      to: '/role',
+    },
+  ]
 
+  function filterNavItems(nav, secondArray) {
+
+    let result = [];
+
+
+    nav.forEach(group => {
+      const filteredItems = group.items.filter(item => {
+        return secondArray.some(menu => menu.name === item.name);
+      });
+
+      if (filteredItems.length > 0) {
+        result.push({
+          ...group,
+          items: filteredItems,
+        });
+      }
+    });
+
+    return result;
+  }
+
+  const filteredNav = filterNavItems(navigation, secondArray);
+  console.log("filteredNav",filteredNav)
   return (
     <CSidebar
       position="fixed"

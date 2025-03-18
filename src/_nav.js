@@ -47,6 +47,11 @@ const _nav = [
         component: CNavItem,
         name: 'Days off management',
         to: '/days-off-management',
+      },
+      {
+        component: CNavItem,
+        name: 'Calendar',
+        to: '/calendar',
       }
     ],
   }
