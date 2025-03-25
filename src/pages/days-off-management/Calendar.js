@@ -1,6 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {getCalendar} from "../../api/day-off-management/dayOffManagement";
+import {getCalendar, updateCalendarByType} from "../../api/day-off-management/dayOffManagement";
 import {Button, FormControl, InputLabel, MenuItem, Select, useTheme} from "@mui/material";
+import Preloader from "../../components/Preloader";
+import CircularProgress from "@mui/material/CircularProgress";
+import FullPageLoader from "../../components/Preloader";
+
 
 const YearlyAvailabilityCalendar = ({year = 2025}) => {
   const theme = useTheme();
@@ -9,6 +13,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
   const [calendarChoose, setCalendarChoose] = useState([]);
   const [calendarData, setCalendarData] = useState([]);
   const [selectAction, setSelectAction] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [type] = useState([
     {id: 1, name: 'NATIONAL_HOLIDAY', label: 'NATIONAL HOLIDAY'},
     {id: 2, name: 'RELIGIOUS_HOLIDAY', label: 'RELIGIOUS HOLIDAY'},
@@ -74,30 +79,54 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
   };
 
   const getClassForDay = (day, month) => {
+    const status = getAvailabilityStatus(day, month);
     if (isWeekend(day, month)) return "text-gray-400";
     if (isToday(day, month)) return "bg-blue-200 text-blue-800 font-bold";
     if (isDateUnavailable(day, month)) return "bg-red-200 text-red-800";
+    if (status === "NATIONAL_HOLIDAY") {
+      return "cell-toil";
+    } else if (status === "RELIGIOUS_HOLIDAY") {
+      return "cell-deleted";
+    }
     return "bg-green-100 text-green-800";
   };
+
+  const getAvailabilityStatus = (day, currentMonth) => {
+    const date = formatedDate(currentMonth, day);
+    const targetDate = calendar.find((day) => {
+      return day?.date === date
+    });
+    return targetDate?.type || "available";
+  };
+
+  // 2025-03-15
+  const formatedDate = (date, day) => {
+    const formattedMonth = parseInt(date) < 10 ? `0${date}` : date
+    const formattedDay = parseInt(day) < 10 ? `0${day}` : day
+    return currentYear + "-" + formattedMonth + "-" + formattedDay;
+  }
+
 
   const handleClick = (year, month, day) => {
 
     const dateFormatted = formattedDate(year, month, day);
-    const calendarId = calendar.find((date) => date.date === dateFormatted);
+    const calendarId = calendar.find((date) => {
+      return date.date === dateFormatted
+    });
 
     setCalendarChoose(prevState => {
       const exist = prevState.some(item => item.date === dateFormatted);
       if (exist) {
-        return prevState.filter(item => !(item.date === day))
+        return prevState.filter(item => !(item.date === dateFormatted))
       } else {
         return [...prevState, {date: dateFormatted}]
       }
     });
 
     setCalendarData(prevState => {
-      const exist = prevState.some(item => item.id === calendarId.id);
+      const exist = prevState.some(item => item?.id === calendarId?.id);
       if (exist) {
-        return prevState.filter(item => !(item.id === calendarId.id))
+        return prevState.filter(item => !(item?.id === calendarId?.id))
       } else {
         return [...prevState, calendarId]
       }
@@ -105,7 +134,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
   }
 
   const formattedDate = (year, month, day) => {
-    const date = new Date(year, month - 1, day);
+    const date = new Date(year + 1, month - 1, day);
     return date.toISOString().split('T')[0];
   };
 
@@ -181,13 +210,23 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
   };
 
   function create() {
-    const updateData = calendarData.map(item => (
-      {
-        ...item,
-        type: selectAction.name
-      }
-    ))
-    console.log(JSON.stringify(updateData, null, 2), "calendarData")
+    setLoading(true)
+    try {
+      const updateData = calendarData.map(item => (
+        {
+          ...item,
+          type: selectAction.name
+        }
+      ))
+
+      updateData.forEach(item => {
+        updateCalendarByType(item.id, item.type);
+      })
+    } catch (e) {
+      setTimeout(() => setLoading(false), 3000);
+    } finally {
+      setTimeout(() => setLoading(false), 3000);
+    }
   }
 
   return (
@@ -210,7 +249,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
                             className="w-100"
                             style={getStyles(name, theme)}
                   >
-                    <em>{item?.name?.toUpperCase()}</em>
+                    <em>{item?.label?.toUpperCase()}</em>
                   </MenuItem>
                 ))}
               </Select>
@@ -263,7 +302,17 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
           <div className="w-4 h-4 bg-white border mr-2 rounded"></div>
           <span className="text-gray-400">Weekend</span>
         </div>
+        <div className="flex items-center">
+          <div className="w-4 h-4 cell-toil border mr-2 rounded"></div>
+          <span className="text-gray-400">NATIONAL HOLIDAY</span>
+        </div>
+        <div className="flex items-center">
+          <div className="w-4 h-4 cell-deleted border mr-2 rounded"></div>
+          <span className="text-gray-400">RELIGIOUS HOLIDAY</span>
+        </div>
       </div>
+
+      {loading && (<FullPageLoader/>)}
     </div>
   );
 };

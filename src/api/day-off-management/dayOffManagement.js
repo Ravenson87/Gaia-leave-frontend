@@ -30,12 +30,67 @@ export const getFreeDayType = async () => {
   }
 };
 
-export const createMenu = async (json) => {
+export const subtractDaysFromFreeDays = async (json) => {
   try {
-    return await axios.post(`${api}/api/v1/menu/create`, json, {
+    return await axios.post(`${api}/api/v1/day-off-management/save`, json, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const workingHoursAssign = async (user_id, working_hours, as_free_days) => {
+  try {
+    const formData = new FormData();
+    formData.append("user_id", user_id);
+    formData.append("working_hours", working_hours);
+    formData.append("as_free_days", as_free_days);
+    return await axios.post(`${api}/api/v1/working-hours/update`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const createOvertimeHours = async (json) => {
+  try {
+    return await axios.post(`${api}/api/v1/overtime-hours/create`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const createUserUsedFreeDays = async (json) => {
+  try {
+    return await axios.post(`${api}/api/v1/user-used-free-days/create`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const deleteUserUsedFreeDaysByIds = async (ids) => {
+  try {
+    return await axios.delete(`${api}/api/v1/user-used-free-days/delete-by-ids`,{
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        ids: ids
+      }
     });
   } catch (error) {
     console.log(error)
@@ -63,17 +118,21 @@ export const deleteMenu = async (id) => {
 }
 /**
  * @param id
- * @param json
+ * @param type
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const updateMenu = async (id, json) => {
+export const updateCalendarByType = async (id, type) => {
   try {
-    return await axios.put(`${api}/api/v1/menu/update/${id}`, json, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return await axios.put(
+      `${api}/api/v1/calendar/update-by-type/${id}/${type}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
   } catch (error) {
-    console.error('error: ', error)
+    console.error('error: ', error);
   }
-}
+};

@@ -1,8 +1,8 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {FLUSH, PAUSE, PERSIST, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE,} from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import userReducer from "../state/slices/user/userSlice";
-import sidebarReducer from "../state/slices/sidebar/sidebarSlice";
+import userReducer from "../../state/slices/user/userSlice";
+import sidebarReducer from "../../state/slices/sidebar/sidebarSlice";
 
 const persistConfig = {
   key: "gaia_leave",

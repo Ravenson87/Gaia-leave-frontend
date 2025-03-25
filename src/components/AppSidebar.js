@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { CSidebar, CSidebarBrand, CSidebarNav, CSidebarToggler } from '@coreui/react'
@@ -14,11 +14,19 @@ import 'simplebar/dist/simplebar.min.css'
 
 // sidebar nav config
 import navigation from '../_nav'
+import Cookies from "universal-cookie";
+import {jwtDecode} from "jwt-decode";
+import {getUserById} from "../api/user";
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const [nav, setNav] = useState()
+
+  useEffect(() => {
+    get()
+  }, []);
   const secondArray = [
     {
       menu_number: 2,
@@ -42,6 +50,21 @@ const AppSidebar = () => {
     },
   ]
 
+  function get() {
+    const cookies = new Cookies();
+    const token = cookies.get('token')
+    const jwtDecodeToken = jwtDecode(token);
+    if (jwtDecodeToken.role === "super_admin") {
+      setNav(navigation)
+    } else {
+      getUserById(2).then((data) => {
+        const filteredNav = filterNavItems(navigation, data.role.roleMenus);
+        setNav(filteredNav)
+      })
+    }
+
+  }
+
   function filterNavItems(nav, secondArray) {
 
     let result = [];
@@ -63,8 +86,7 @@ const AppSidebar = () => {
     return result;
   }
 
-  const filteredNav = filterNavItems(navigation, secondArray);
-  console.log("filteredNav",filteredNav)
+
   return (
     <CSidebar
       position="fixed"
@@ -79,7 +101,7 @@ const AppSidebar = () => {
       </CSidebarBrand>
       <CSidebarNav>
         <SimpleBar>
-          <AppSidebarNav items={navigation} />
+          <AppSidebarNav items={nav} />
         </SimpleBar>
       </CSidebarNav>
       <CSidebarToggler

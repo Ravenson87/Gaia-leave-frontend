@@ -4,22 +4,29 @@ import Paper from '@mui/material/Paper';
 import {useEffect, useState} from "react";
 import {deleteUser, getUser, updateUser} from "../../../api/user";
 import {Button, IconButton, Tooltip} from "@mui/material";
-import CreateRole from "../user/developer-dashboard-user/create";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AlertDialog from "../../../components/Modal";
 import CreateUser from "../user/developer-dashboard-user/create";
 import {getJobPosition} from "../../../api/jobPosition";
-import {getRole} from "../../../api/role";
+import SetWorkingParameters from "./developer-dashboard-user/userTotalAttendance";
+import UpdateUser from "./developer-dashboard-user/update";
+import DocumentList from "./developer-dashboard-user/document";
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 const User = () => {
   const [editData, setEditData] = useState(null);
+  const [editVisible, setEditVisible] = useState(false);
   const [createModal, setCreateModal] = useState(false);
+  const [documentVisible, setDocumentVisible] = useState(false);
+  const [documentData, setDocumentData] = useState(null);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState('');
   const [user, setUser] = useState([]);
   const [jobPositionData, setJobPositionData] = useState(null);
-  const [roleData, setRoleData] = useState(null);
+  const [userTotalAttendanceVisible, setUserTotalAttendanceVisible] = useState(false);
+  const [userTotalAttendanceData, setUserTotalAttendanceData] = useState(null);
   const columns = [
     {field: 'id', headerName: 'ID', width: 50},
     {field: 'first_name', headerName: 'First name', width: 150, editable: true},
@@ -74,6 +81,19 @@ const User = () => {
                 <DeleteIcon/>
               </IconButton>
             </Tooltip>
+            <Tooltip title="Total attendance" className='mx-lg-2'>
+              <IconButton color="primary" onClick={() => handleTotalAttendance(params.row)}>
+                <CalendarTodayIcon/>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="View Document" className='mx-lg-2'>
+              <IconButton color="primary" onClick={() => {
+                setDocumentVisible(true)
+                setDocumentData(params.row)
+              }}>
+                <AssignmentIcon/>
+              </IconButton>
+            </Tooltip>
           </>
         );
       }
@@ -109,7 +129,9 @@ const User = () => {
     return jobPosition ? jobPosition.title : "N/A";
   }
 
-  function handleEdit() {
+  function handleEdit(data) {
+    setEditData(data);
+    setEditVisible(true);
     if (editData?.id) {
       setData({
         header: "Edit user",
@@ -164,9 +186,15 @@ const User = () => {
     })
   }
 
+  function handleTotalAttendance(data) {
+    console.log(data)
+    setUserTotalAttendanceVisible(true);
+    setUserTotalAttendanceData(data);
+  }
+
   return (
     <>
-      {!createModal && (
+      {!createModal && !userTotalAttendanceVisible && !editVisible && !documentVisible && (
         <>
           <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
           <Paper sx={{height: 400, width: '100%'}}>
@@ -182,6 +210,11 @@ const User = () => {
         </>
       )}
       {createModal && (<CreateUser setCreateModal={setCreateModal} get={get}/>)}
+      {editVisible && (<UpdateUser setUpdateModal={setEditVisible} get={get} editData={editData}/>)}
+      {documentVisible && (<DocumentList data={documentData} setDocumentVisible={setDocumentVisible}/>)}
+      {userTotalAttendanceVisible && (
+        <SetWorkingParameters setModalOpen={setUserTotalAttendanceVisible} get={get} data={userTotalAttendanceData}/>)
+      }
       <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
     </>
   )

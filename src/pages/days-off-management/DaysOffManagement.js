@@ -1,8 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import {getUser} from "../../api/user";
-import {getCalendar, getFreeDayType} from "../../api/day-off-management/dayOffManagement";
-import * as res from "autoprefixer";
-import {Button, FormControl, InputLabel, MenuItem, Select, useTheme} from "@mui/material";
+import {
+  createOvertimeHours, createUserUsedFreeDays, deleteUserUsedFreeDaysByIds,
+  getCalendar,
+  getFreeDayType,
+   workingHoursAssign
+} from "../../api/day-off-management/dayOffManagement";
+import {Button, FormControl, Input, InputLabel, MenuItem, Select, useTheme} from "@mui/material";
+import {RefreshCw, DollarSign, Coffee, X} from 'lucide-react';
 
 const AvailabilityCalendar = ({month = 3, year = 2025}) => {
   const theme = useTheme();
@@ -12,13 +17,23 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
   const [userUsedFreeDaysData, setUserUsedFreeDaysData] = useState([]);
   const [userUsedFreeDaysDataDeleted, setUserUsedFreeDaysDataDeleted] = useState([]);
   const [userUsedFreeDays, setUserUsedFreeDays] = useState([]);
+  const [overtimeHours, setOvertimeHours] = useState([]);
+  const [overtimeHoursData, setOvertimeHoursData] = useState([]);
   const [userUsedFreeDaysDeleted, setUserUsedFreeDaysDeleted] = useState([]);
   const [freeDayTypeData, setFreeDayTypeData] = useState([]);
   const [freeDayType, setFreeDayType] = useState(null);
-  const [actionData] = useState([{name: 'Create', id: 0}, {name: 'Delete', id: 1}]);
+  const [actionData] = useState([{name: 'Create', id: 0}, {name: 'Delete', id: 1}, {name: 'Overtime hours', id: 2}]);
   const [action, setAction] = useState(null);
+  const [showConversionModal, setShowConversionModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [conversionType, setConversionType] = useState('');
+  const [hoursToConvert, setHoursToConvert] = useState(0);
 
   useEffect(() => {
+    get();
+  }, []);
+
+  function get() {
     getUser().then((res) => {
       if (res.status === 200) {
         setUsers(res.data);
@@ -34,7 +49,7 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
         setFreeDayTypeData(res.data);
       }
     });
-  }, []);
+  }
 
   const previousMonth = () => {
     const newMonth = currentMonth.month === 1 ? 12 : currentMonth.month - 1;
@@ -66,11 +81,9 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
     return months[monthNumber - 1];
   };
 
-
   const previousName = getMonthName(currentMonth.month === 1 ? 12 : currentMonth.month - 1);
   const nextName = getMonthName(currentMonth.month === 12 ? 1 : currentMonth.month + 1);
   const currentName = getMonthName(currentMonth.month);
-
 
   const getDaysInMonth = (month, year) => {
     return new Date(year, month, 0).getDate();
@@ -78,13 +91,7 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
 
   const daysCount = getDaysInMonth(currentMonth.month, currentMonth.year);
 
-
-  const getFirstDayOfMonth = (month, year) => {
-    return new Date(year, month - 1, 1).getDay();
-  };
-
   const daysInMonth = Array.from({length: daysCount}, (_, i) => i + 1);
-
 
   const isToday = (day) => {
     const today = new Date();
@@ -98,7 +105,6 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
     const dayOfWeek = date.getDay();
     return dayOfWeek === 0 || dayOfWeek === 6;
   };
-
 
   const getAvailabilityStatus = (staffId, day) => {
     const date = formatedDate(currentMonth, day);
@@ -122,12 +128,20 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
       }
     });
 
+    const userOvertimeHours = overtimeHours.find((d) => {
+      if (d.user_id === staffId) {
+        return d.date === date;
+      }
+    });
+
     if (userUsedFreeDaysTargetDataDeleted) {
       return userUsedFreeDaysTargetDataDeleted.type === "deleted" ? "deleted" : "unavailable";
     } else if (targetDate) {
       return check ? check : "unavailable";
     } else if (userUsedFreeDaysTargetData) {
       return userUsedFreeDaysTargetData.type === "new" ? "new" : "unavailable";
+    } else if (userOvertimeHours) {
+      return "overtime";
     }
     return "available";
   };
@@ -148,7 +162,32 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
       if (exist) {
         return prevState?.filter(item => !(item.calendar_id === calendarId.id && item.user_id === member.id))
       } else {
-        return [...prevState, {calendar_id: calendarId.id, user_id: member.id, free_day_type_id: freeDayType.id}]
+        return [...prevState, {
+          calendar_id: calendarId.id,
+          user_id: member.id,
+          free_day_type_id: freeDayType?.id || " "
+        }]
+      }
+    });
+  }
+
+  function addUserOvertimeHours(day, member) {
+    const calendarId = calendar.find((date) => date.date === day);
+    setOvertimeHours(prevState => {
+      const exist = prevState.some(item => item.date === day && item.user_id === member.id);
+      if (exist) {
+        return prevState.filter(item => !(item.date === day && item.user_id === member.id))
+      } else {
+        return [...prevState, {date: day, user_id: member.id, type: 'overtime'}]
+      }
+    });
+
+    setOvertimeHoursData(prevState => {
+      const exist = prevState.some(item => item.calendar_id === calendarId.id && item.user_id === member.id);
+      if (exist) {
+        return prevState?.filter(item => !(item.calendar_id === calendarId.id && item.user_id === member.id))
+      } else {
+        return [...prevState, {calendar_id: calendarId.id, user_id: member.id}]
       }
     });
   }
@@ -193,6 +232,7 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
     if (status === "toil") return "cell-toil";
     if (status === "new") return "cell-new";
     if (status === "deleted") return "cell-deleted";
+    if (status === "overtime") return "cell-overtime";
     return "cell-available";
   };
 
@@ -210,6 +250,8 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
         return "NEW";
       case "deleted":
         return "DEL";
+      case "overtime":
+        return "OT";
       default:
         return "";
     }
@@ -229,15 +271,208 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
   }
 
   function create() {
-    console.log(userUsedFreeDaysData)
+
+    if (action.id === 2 && overtimeHoursData.length > 0) {
+      createOvertimeHours(overtimeHoursData).then(() => get());
+    } else if (userUsedFreeDaysData.length > 0) {
+      createUserUsedFreeDays(userUsedFreeDaysData).then(() => get());
+    }
+
   }
 
+
   function deleteFunction() {
-    console.log(userUsedFreeDaysDataDeleted)
+
+    const matchedIds = [];
+
+    users.forEach(user => {
+      user?.userUsedFreeDays.forEach(freeDay => {
+        if (userUsedFreeDaysDataDeleted.some(criteria =>
+          criteria.user_id === freeDay.user_id && criteria.calendar_id === freeDay.calendar.id
+        )) {
+          matchedIds.push(freeDay.id);
+        }
+      });
+    });
+    deleteUserUsedFreeDaysByIds(matchedIds).then(() => get())
   }
 
   function selectAction(event) {
     setAction(event.target.value)
+  }
+
+  const handleConvertClick = (user) => {
+    setSelectedUser(user);
+    setHoursToConvert(0);
+    setConversionType('');
+    setShowConversionModal(true);
+  };
+
+  const handleConversion = () => {
+    if (!selectedUser || hoursToConvert <= 0 || !conversionType) return;
+    if (hoursToConvert >= selectedUser?.userTotalAttendance?.overtime_hours_sum) return;
+    workingHoursAssign(selectedUser.id, hoursToConvert, conversionType === "timeoff");
+  };
+
+  const getUserInitials = (user) => {
+    return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+  };
+
+  const getAvatarColor = (userId) => {
+
+    const colors = [
+      'rgba(86, 204, 242, 0.2)',
+      'rgba(235, 131, 131, 0.2)',
+      'rgba(144, 237, 125, 0.2)',
+      'rgba(247, 220, 111, 0.2)',
+      'rgba(187, 143, 206, 0.2)'
+    ];
+
+    const textColors = [
+      'rgb(41, 128, 185)',
+      'rgb(192, 57, 43)',
+      'rgb(39, 174, 96)',
+      'rgb(211, 159, 8)',
+      'rgb(142, 68, 173)'
+    ];
+
+    const index = userId % colors.length;
+    return {
+      backgroundColor: colors[index],
+      color: textColors[index]
+    };
+  };
+
+  function onIncrease(hours, day, member) {
+
+    const calendarId = calendar.find((date) => date.date === day);
+
+    setOvertimeHoursData(prevState => {
+      const exist = prevState.some(item => item.calendar_id === calendarId.id && item.user_id === member.id);
+      const existingIndex = prevState.findIndex(
+        item => item.calendar_id === calendarId.id && item.user_id === member.id
+      );
+      if (exist) {
+        return prevState.map((item, index) =>
+          index === existingIndex
+            ? {...item, overtime_hours: hours}
+            : item
+        );
+      } else {
+        return [...prevState, {overtime_hours: hours, calendar_id: calendarId.id, user_id: member.id}];
+      }
+    });
+  }
+
+  function onDecrease(hours, day, member) {
+
+    const calendarId = calendar.find((date) => date.date === day);
+
+    setOvertimeHoursData(prevState => {
+      const exist = prevState.some(item => item.calendar_id === calendarId.id && item.user_id === member.id);
+      const existingIndex = prevState.findIndex(
+        item => item.calendar_id === calendarId.id && item.user_id === member.id
+      );
+      if (exist) {
+        return prevState.map((item, index) =>
+          index === existingIndex
+            ? {...item, overtime_hours: hours}
+            : item
+        );
+      } else {
+        return [...prevState, {overtime_hours: hours, calendar_id: calendarId.id, user_id: member.id}];
+      }
+    });
+  }
+
+  function conversationModal() {
+
+    return (
+      <>
+        {showConversionModal && (
+          <div className="modal d-block" tabIndex="-1" role="dialog" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content border-0 shadow">
+                <div className="modal-header border-bottom-0">
+                  <h5 className="modal-title">Overtime Hours Conversion</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowConversionModal(false)}
+                          aria-label="Close"></button>
+                </div>
+                <div className="modal-body">
+                  <p>
+                    <span className="fw-medium">{selectedUser?.first_name} {selectedUser?.last_name}</span>{' '}
+                    {/*<span className="fw-medium">{selectedUser}</span> overtime hours.*/}
+                  </p>
+
+                  <div className="mb-4">
+                    <label htmlFor="hoursToConvert" className="form-label fw-medium">
+                      Hours to Convert
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control form-control-lg"
+                      id="hoursToConvert"
+                      min="1"
+                      max={selectedUser?.overtimeHours}
+                      value={hoursToConvert}
+                      onChange={(e) => setHoursToConvert(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label fw-medium">
+                      Conversion Type
+                    </label>
+                    <div className="d-flex gap-3">
+                      <div
+                        className={`card flex-grow-1 p-3 text-center border ${conversionType === 'payment' ? 'border-success bg-success bg-opacity-10' : 'border-light'}`}
+                        onClick={() => setConversionType('payment')}
+                        style={{cursor: 'pointer'}}
+                      >
+                        <div className="d-flex flex-column align-items-center">
+                          <DollarSign size={30} className="text-success mb-2"/>
+                          <span className="fw-medium">Payment</span>
+                          {hoursToConvert > 0 && (
+                            <span className="badge bg-success mt-2">{hoursToConvert}h</span>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className={`card flex-grow-1 p-3 text-center border ${conversionType === 'timeoff' ? 'border-warning bg-warning bg-opacity-10' : 'border-light'}`}
+                        onClick={() => setConversionType('timeoff')}
+                        style={{cursor: 'pointer'}}
+                      >
+                        <div className="d-flex flex-column align-items-center">
+                          <Coffee size={30} className="text-warning mb-2"/>
+                          <span className="fw-medium">Time Off</span>
+                          {hoursToConvert > 0 && (
+                            <span
+                              className="badge bg-warning text-dark mt-2">{hoursToConvert} days</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer border-top-0">
+                  <button type="button" className="btn btn-light" onClick={() => setShowConversionModal(false)}>
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary px-4 rounded-pill"
+                    onClick={handleConversion}
+                    disabled={!conversionType || hoursToConvert <= 0}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    )
   }
 
   return (
@@ -341,40 +576,157 @@ const AvailabilityCalendar = ({month = 3, year = 2025}) => {
             </tr>
             </thead>
             <tbody>
-            {users.map(member => (
-              <tr key={member.id} className="staff-row">
-                <td className="staff-cell">
-                  <div className="staff-info">
-                    {/*<div className="staff-image">*/}
-                    {/*  <img src={member.image || "assets/app/media/img/users/user4.png"} alt={member.name} />*/}
-                    {/*</div>*/}
-                    <div className="staff-details">
-                      <span className="staff-name">{member?.first_name + ' ' + member?.last_name}</span>
+            {users.map(member => {
+              const avatarStyle = getAvatarColor(member.id);
+              return (
+                <tr key={member.id} className="staff-row">
+                  <td className="staff-cell">
+                    <div className="staff-info d-flex justify-content-between">
+                      <div
+                        className="staff-avatar d-flex align-items-center justify-content-center rounded-circle fw-bold"
+                        style={{
+                          width: "60px",
+                          height: "45px",
+                          backgroundColor: avatarStyle.backgroundColor,
+                          color: avatarStyle.color
+                        }}
+                      >
+                        {getUserInitials(member)}
+                      </div>
+                      <div className="staff-details">
+                        <span className="staff-name"
+                              style={{whiteSpace: "nowrap"}}>{member?.first_name + ' ' + member?.last_name}</span>
+                      </div>
+                      <button
+                        onClick={() => handleConvertClick(member)}
+                        className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center mx-lg-2"
+                      >
+                        <RefreshCw size={16} className="me-2"/>
+                        <span
+                          style={{whiteSpace: "nowrap"}}>{member?.userTotalAttendance?.overtime_hours_sum || 0} hours</span>
+                      </button>
                     </div>
-                  </div>
-                </td>
-
-                {daysInMonth.map(day => (
-                  <td
-                    key={day}
-                    className={`${getClassForStatus(member.id, day)} ${action !== null ? (action.id === 0 ? 'cursor-pointer' : getAvailabilityStatus(member.id, day) !== 'available' ? 'cursor-pointer' : "") : ''}`}
-                    onClick={() => {
-                      if (action !== null) {
-                        action.id === 1 ? deleteUserUsedFreeDays(formatedDate(currentMonth, day), member) : addUserUsedFreeDays(formatedDate(currentMonth, day), member)
-                      }
-                    }}
-                  >
-                    {status(getAvailabilityStatus(member.id, day))}
                   </td>
-                ))}
-              </tr>
-            ))}
+
+                  {daysInMonth.map(day => (
+                    <td
+                      key={day}
+                      className={`${getClassForStatus(member.id, day)} ${action !== null ? (action.id === 0 ? 'cursor-pointer' : getAvailabilityStatus(member.id, day) !== 'available' ? 'cursor-pointer' : "") : ''}`}
+                      onClick={() => {
+                        if (action !== null) {
+                          action.id === 1 ? deleteUserUsedFreeDays(formatedDate(currentMonth, day), member) : action.id === 0 ? addUserUsedFreeDays(formatedDate(currentMonth, day), member) : status(getAvailabilityStatus(member.id, day)) !== "OT" && addUserOvertimeHours(formatedDate(currentMonth, day), member)
+                        }
+                      }}
+                    >
+                      {status(getAvailabilityStatus(member.id, day)) === "OT" && <OvertimeInput
+                        onIncrease={onIncrease}
+                        onDecrease={onDecrease}
+                        onClose={() => addUserOvertimeHours(formatedDate(currentMonth, day), member)}
+                        day={formatedDate(currentMonth, day)}
+                        member={member}
+                      />}
+                      {status(getAvailabilityStatus(member.id, day))}
+                    </td>
+                  ))}
+                  <td className="text-end pe-4">
+
+                  </td>
+                </tr>
+              )
+            })}
             </tbody>
           </table>
         </div>
+        {conversationModal()}
       </div>
     </>
   );
 };
+const OvertimeInput = ({
+                         onIncrease,
+                         onDecrease,
+                         onClose,
+                         min = 24,
+                         day,
+                         member
+                       }) => {
+  const [hours, setHours] = useState(0);
+
+  const handleIncrease = () => {
+    if (hours < 24) {
+      onIncrease(hours, day, member);
+      setHours(prevState => prevState + 1);
+    }
+  };
+
+  const handleDecrease = () => {
+    if (hours > 0) {
+      onDecrease(hours, day, member);
+      setHours(prevState => prevState - 1);
+    }
+  };
+
+  return (
+    <div className="relative flex items-center space-x-2 bg-blue-50 p-2 rounded-lg shadow-sm">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-0 right-0 w-5 h-5 p-0"
+        style={{
+          position: 'absolute',
+          top: '2px',
+          right: '-1.2rem'
+        }}
+        onClick={onClose}
+      >
+        <X className="w-4 h-4 text-danger hover:text-danger-dark"/>
+      </Button>
+      <Input
+        type="number"
+        value={hours}
+        onChange={(e) => setHours(Number(e.target.value))}
+        min="0"
+        className="w-16 h-8"
+        placeholder="Hours"
+      />
+      <div className="flex flex-col space-y-1">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-4 px-2 py-0 bg-green-100 hover:bg-green-200"
+          onClick={handleIncrease}
+        >
+          +
+        </Button>
+        <span>{hours}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-4 px-2 py-0 bg-red-100 hover:bg-red-200"
+          onClick={handleDecrease}
+        >
+          -
+        </Button>
+      </div>
+    </div>
+  );
+};
+<style jsx>
+  {`
+    .modal {
+      overflow-y: auto;
+    }
+
+    .form-control {
+      border-radius: 0.5rem;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+
+  `}
+</style>
 
 export default AvailabilityCalendar;
