@@ -30,6 +30,23 @@ export const getUserById = async (id) => {
   }
 };
 
+/**
+ * Check user for verification.
+ *
+ * @param hash
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export const checkUserForVerification = async (hash) => {
+  try {
+    return await axios.get(`${api}/api/v1/user/read-by-hash?hash=${hash}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
 
 export const createUser = async (json) => {
     try {

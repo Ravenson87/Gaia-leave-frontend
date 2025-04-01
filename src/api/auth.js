@@ -22,3 +22,22 @@ export const refreshToken = async (refreshTokenParam) => {
         console.log(error)
     }
 }
+
+export const validateUser = async (hash, password, dateOfBirth, phone, dateOfHoliday, holidayDescription, holiday) => {
+  try {
+    const formData = new FormData();
+    formData.append("hash", hash);
+    formData.append("password", password);
+    formData.append("date_of_birth", dateOfBirth);
+    formData.append("phone", phone);
+
+    if (holiday) {
+      formData.append("date_of_holiday", dateOfHoliday);
+      formData.append("holiday_description", holidayDescription);
+    }
+
+    return await axios.put(`${api}/api/v1/auth/validate-user`, formData);
+  } catch (error) {
+    return error;
+  }
+}

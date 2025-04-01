@@ -59,7 +59,7 @@ const UserProfile = () => {
 
   return (
     <>
-      {superAdmin ? (
+      {!superAdmin ? (
         <>
           <div className="position-relative mb-5 mt-n3 mx-n4">
             <div className="bg-dark position-absolute w-100 h-100 opacity-75"
