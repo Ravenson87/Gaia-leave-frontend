@@ -1,5 +1,5 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {Search, Check, X} from 'lucide-react';
+import React, {useEffect, useRef, useState} from 'react';
+import {Check, Search, X} from 'lucide-react';
 import {Accordion, AccordionDetails, AccordionSummary, Button, Typography} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {getMenu} from "../../../api/menu";

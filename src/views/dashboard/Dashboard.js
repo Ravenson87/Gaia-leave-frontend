@@ -18,8 +18,8 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
-import { CChartLine } from '@coreui/react-chartjs'
-import { getStyle, hexToRgba } from '@coreui/utils'
+import {CChartLine} from '@coreui/react-chartjs'
+import {getStyle, hexToRgba} from '@coreui/utils'
 import CIcon from '@coreui/icons-react'
 import {
   cibCcAmex,
@@ -28,16 +28,16 @@ import {
   cibCcPaypal,
   cibCcStripe,
   cibCcVisa,
-  cibGoogle,
   cibFacebook,
+  cibGoogle,
   cibLinkedin,
+  cibTwitter,
   cifBr,
   cifEs,
   cifFr,
   cifIn,
   cifPl,
   cifUs,
-  cibTwitter,
   cilCloudDownload,
   cilPeople,
   cilUser,

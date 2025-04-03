@@ -11,15 +11,15 @@ import {
   CCardSubtitle,
   CCardText,
   CCardTitle,
+  CCol,
   CListGroup,
   CListGroupItem,
   CNav,
   CNavItem,
   CNavLink,
-  CCol,
   CRow,
 } from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {DocsExample} from 'src/components'
 
 import ReactImg from 'src/assets/images/react.jpg'
 

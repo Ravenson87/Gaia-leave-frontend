@@ -1,18 +1,18 @@
-import React, { useRef, useState } from 'react'
+import React, {useRef, useState} from 'react'
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
   CButton,
-  CRow,
+  CCard,
+  CCardBody,
+  CCardHeader,
   CCol,
+  CRow,
   CToast,
   CToastBody,
   CToastClose,
-  CToastHeader,
   CToaster,
+  CToastHeader,
 } from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {DocsExample} from 'src/components'
 
 const ExampleToast = () => {
   const [toast, addToast] = useState(0)

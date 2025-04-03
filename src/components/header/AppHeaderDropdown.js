@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  CAvatar,
-  CDropdown,
-  CDropdownToggle,
-} from '@coreui/react'
+import {CAvatar, CDropdown, CDropdownToggle,} from '@coreui/react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import {useNavigate} from "react-router-dom";

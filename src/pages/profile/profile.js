@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Eye, EyeOff, Mail, User, Calendar, Clock, Shield, X, Sliders, Database, Server, Info} from 'lucide-react';
+import {Calendar, Clock, Database, Eye, EyeOff, Mail, Server, Shield, User} from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {getUserById, updateUploadProfileImage, updateUserPassword} from "../../api/user";
 import Cookies from "universal-cookie";
@@ -8,6 +8,8 @@ import GaiaLeaveLanding from "./GaiaLeaveLanding";
 import ImageUploadField from "./ImageUploadFile";
 
 const UserProfile = () => {
+  const cookies = new Cookies();
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [superAdmin, setSuperAdmin] = useState(false);
@@ -38,7 +40,6 @@ const UserProfile = () => {
   };
 
   function get() {
-    const cookies = new Cookies();
     const token = cookies.get('token')
     const jwtDecodeToken = jwtDecode(token);
 
@@ -54,12 +55,14 @@ const UserProfile = () => {
   }
 
   function onImageChange(file) {
-    updateUploadProfileImage(file, 2);
+    const token = cookies.get('token')
+    const jwtDecodeToken = jwtDecode(token);
+    updateUploadProfileImage(file, jwtDecodeToken?.id);
   }
 
   return (
     <>
-      {!superAdmin ? (
+      {superAdmin ? (
         <>
           <div className="position-relative mb-5 mt-n3 mx-n4">
             <div className="bg-dark position-absolute w-100 h-100 opacity-75"
@@ -220,7 +223,7 @@ const UserProfile = () => {
                               fontSize="12"
                               fill="#6c757d"
                             >
-                               days
+                              days
                             </text>
                           </svg>
                         </div>

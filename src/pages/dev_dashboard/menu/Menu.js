@@ -1,169 +1,169 @@
-import * as React from 'react';
-import {Button, IconButton, Tooltip} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Paper from "@mui/material/Paper";
-import {DataGrid} from "@mui/x-data-grid";
-import {useEffect, useState} from "react";
-import {deleteMenu, getMenu, updateMenu} from "../../../api/menu";
-import CreateMenu from "./developer-dashboard-menu/create";
-import AlertDialog from "../../../components/Modal";
-
+import React, {useEffect, useState} from 'react';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import {deleteMenu, getMenu} from '../../../api/menu';
+import CreateMenu from './developer-dashboard-menu/create';
+import AlertDialog from '../../../components/Modal';
+import UpdateMenu from "./developer-dashboard-menu/update";
 
 const Menu = () => {
-  const [createModal, setCreateModal] = useState(false);
   const [menu, setMenu] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [data, setData] = useState('');
-  const [editData, setEditData] = useState(null);
-
-  const columns = [
-    {field: 'menu_number', headerName: 'Menu number', width: 50},
-    {field: 'name', headerName: 'Name', width: 150, editable: true},
-    {field: 'description', headerName: 'Description', width: 250, editable: true},
-    {
-      field: 'created_by',
-      headerName: 'Created By',
-      width: 150,
-    },
-    {
-      field: 'created_date',
-      headerName: 'Created Date',
-      width: 200,
-    },
-    {
-      field: 'last_modified_by',
-      headerName: 'Last Modified By',
-      width: 150,
-    },
-    {
-      field: 'last_modified_date',
-      headerName: 'Last Modified Date',
-      width: 200,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 500,
-      renderCell: (params) => {
-        return (
-          <>
-            <Tooltip title="Edit">
-              <IconButton color="secondary" onClick={() => handleEdit(params.row)}>
-                <EditIcon/>
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Delete" className='mx-lg-2'>
-              <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-                <DeleteIcon/>
-              </IconButton>
-            </Tooltip>
-          </>
-        );
-      }
-    }
-  ];
-  const paginationModel = {page: 0, pageSize: 5};
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [createModal, setCreateModal] = useState(false);
+  const [updateModal, setUpdateModal] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [alertDialog, setAlertDialog] = useState({ open: false, data: null });
 
   useEffect(() => {
-    get();
+    fetchMenu();
   }, []);
 
-  function get() {
-    getMenu().then(response => {
+  const fetchMenu = async () => {
+    try {
+      const response = await getMenu();
       if (response.status === 200) {
         setMenu(response.data);
-      } else if (response.status === 204) {
+      } else {
         setMenu([]);
       }
-    })
-  }
-
-  function handleEdit(row) {
-    if (editData?.id) {
-      console.log(editData.id);
-      setData({
-        header: "Edit menu",
-        message: "Are you sure you want to edit this menu?",
-        type: 0,
-        data: editData
-      });
-      setOpen(true);
+    } catch (error) {
+      console.error('Failed to fetch menu:', error);
     }
-  }
+  };
 
-  function handleDelete(row) {
-    setData({
-      header: "Delete menu",
-      message: "Are you sure you want to delete this menu?",
-      type: 1,
-      data: row
+  const handleEditClick = (menuItem) => {
+    setSelectedMenu(menuItem);
+    setUpdateModal(true);
+  };
+
+  const handleDeleteClick = (menuId) => {
+    setAlertDialog({
+      open: true,
+      data: {
+        header: 'Delete Menu',
+        message: 'Are you sure you want to delete this menu item?',
+        type: 1,
+        data: menuId
+      }
     });
-    setOpen(true);
-  }
+  };
 
-  function handleRowEdit(row) {
-    setEditData(row);
-  }
+  const handleAlertDialogClose = () => {
+    setAlertDialog({ open: false, data: null });
+  };
 
-  function agreement(data) {
-    if (data.type === 0) {
-      console.log(data);
-      updateMenuFunc(data.data);
-    } else {
-      console.log(data);
-      deleteMenuFunc(data.data)
+  const handleAlertDialogAgree = async (data) => {
+    if (data.type === 1) {
+      try {
+        await deleteMenu(data.data);
+        fetchMenu();
+      } catch (error) {
+        console.error('Failed to delete menu:', error);
+      }
     }
-  }
-
-  function updateMenuFunc(data) {
-    const {menu_number, name, description, id} = data;
-    const json = {
-      menu_number: menu_number,
-      name: name,
-      description: description,
-    }
-    console.log(json);
-    updateMenu(id, json).then((response) => {
-      console.log('Update menu');
-      setOpen(false);
-      setCreateModal(false);
-      get();
-    })
-  }
-
-  function deleteMenuFunc(id) {
-    deleteMenu(id).then((response) => {
-      setOpen(false);
-      setCreateModal(false);
-      get();
-    })
-  }
+    handleAlertDialogClose();
+  };
 
   return (
-    <>
-      {
-        !createModal && (
-          <>
-            <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
-            <Paper sx={{height: 400, width: '100%'}}>
-              <DataGrid
-                rows={menu}
-                columns={columns}
-                initialState={{pagination: {paginationModel}}}
-                pageSizeOptions={[5, 10]}
-                sx={{border: 0}}
-                processRowUpdate={handleRowEdit}
-              />
-            </Paper>
-          </>
-        )}
-      {createModal && (<CreateMenu setVisible={setCreateModal} get={get}/>)}
-      <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
-
-    </>
+    <Box sx={{ width: '100%' }}>
+      {!createModal && !updateModal && (
+        <Card elevation={3} sx={{ borderRadius: 2 }}>
+          <CardHeader
+            title={<Typography variant="h5">Menu Management</Typography>}
+            action={
+              <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateModal(true)}>
+                Create New Menu
+              </Button>
+            }
+          />
+          <Divider />
+          <CardContent>
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Menu Number</TableCell>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Created By</TableCell>
+                    <TableCell>Created Date</TableCell>
+                    <TableCell>Last Modified Date</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {menu.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item) => (
+                    <TableRow key={item.id} hover>
+                      <TableCell>{item.menu_number}</TableCell>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.description || 'N/A'}</TableCell>
+                      <TableCell>{item.created_by || 'N/A'}</TableCell>
+                      <TableCell>{new Date(item.created_date).toLocaleString()}</TableCell>
+                      <TableCell>{new Date(item.last_modified_date).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
+                          <Tooltip title="Edit">
+                            <IconButton color="primary" onClick={() => handleEditClick(item)}>
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton color="error" onClick={() => handleDeleteClick(item.id)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              component="div"
+              count={menu.length}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(event) => setRowsPerPage(parseInt(event.target.value, 10))}
+              rowsPerPageOptions={[5, 10, 25]}
+            />
+          </CardContent>
+        </Card>
+      )}
+      {createModal && <CreateMenu setVisible={setCreateModal} get={fetchMenu} editData={selectedMenu} />}
+      {updateModal && (
+        <UpdateMenu
+          setUpdateModal={setUpdateModal}
+          get={fetchMenu}
+          editData={selectedMenu}
+        />
+      )}
+      <AlertDialog open={alertDialog.open} setOpen={handleAlertDialogClose} data={alertDialog.data} agreement={handleAlertDialogAgree} />
+    </Box>
   );
+};
 
-}
 export default Menu;

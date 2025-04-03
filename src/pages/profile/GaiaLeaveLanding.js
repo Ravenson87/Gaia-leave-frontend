@@ -1,5 +1,5 @@
 import React from 'react';
-import {Layers, Calendar, Users, Shield, BarChart, Sliders, Info} from 'lucide-react';
+import {BarChart, Calendar, Layers, Shield} from 'lucide-react';
 
 const GaiaLeaveLanding = () => {
   return (

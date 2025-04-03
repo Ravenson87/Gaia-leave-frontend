@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import {
   CButton,
   CCard,
@@ -7,8 +7,8 @@ import {
   CCol,
   CForm,
   CFormCheck,
-  CFormInput,
   CFormFeedback,
+  CFormInput,
   CFormLabel,
   CFormSelect,
   CFormTextarea,
@@ -16,7 +16,7 @@ import {
   CInputGroupText,
   CRow,
 } from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {DocsExample} from 'src/components'
 
 const CustomStyles = () => {
   const [validated, setValidated] = useState(false)

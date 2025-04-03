@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Upload, Image, X } from 'lucide-react';
+import React, {useRef, useState} from 'react';
+import {Upload, X} from 'lucide-react';
 
 const ImageUploadField = ({ onImageChange, data }) => {
   const [previewImage, setPreviewImage] = useState(data?.profile_image);

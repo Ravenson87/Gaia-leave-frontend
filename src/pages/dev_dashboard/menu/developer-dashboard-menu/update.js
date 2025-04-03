@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   Box,
   Button,
@@ -10,20 +10,33 @@ import {
   IconButton,
   Stack,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
-import AddIcon from "@mui/icons-material/Add";
-import {createJobPosition} from "../../../../api/jobPosition";
+import EditIcon from "@mui/icons-material/Edit";
+import {updateMenu} from "../../../../api/menu";
 
-const CreateJobPosition = ({ setVisible, get }) => {
+const UpdateMenu = ({ setUpdateModal, get, editData }) => {
   const [formData, setFormData] = useState({
-    title: "",
+    id: "",
+    menu_number: null,
+    name: "",
     description: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        id: editData.id,
+        menu_number: editData.menu_number || "",
+        name: editData.name || "",
+        description: editData.description || "",
+      });
+    }
+  }, [editData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,8 +50,12 @@ const CreateJobPosition = ({ setVisible, get }) => {
     let valid = true;
     const newErrors = {};
 
-    if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
+    if (!formData.menu_number) {
+      newErrors.menu_number = "Menu number is required";
+      valid = false;
+    }
+    if (!formData.name.trim()) {
+      newErrors.name = "Menu name is required";
       valid = false;
     }
 
@@ -50,14 +67,14 @@ const CreateJobPosition = ({ setVisible, get }) => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const response = await createJobPosition(formData);
-      if (response.status === 201) {
+      const response = await updateMenu(formData.id, formData);
+      if (response.status === 200) {
         get();
-        setVisible(false);
+        setUpdateModal(false);
       }
     } catch (error) {
-      console.error("Error creating job position:", error);
-      setErrors({ title: "Failed to create job position" });
+      console.error("Error updating menu:", error);
+      setErrors({ name: "Failed to update menu" });
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +85,12 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <AddIcon color="primary" />
-            <Typography variant="h6">Create Job Position</Typography>
+            <EditIcon color="primary" />
+            <Typography variant="h6">Edit Menu</Typography>
           </Stack>
         }
         action={
-          <IconButton onClick={() => setVisible(false)} size="small">
+          <IconButton onClick={() => setUpdateModal(false)} size="small">
             <CloseIcon />
           </IconButton>
         }
@@ -81,25 +98,38 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
               required
-              name="title"
-              label="Job Title"
-              value={formData.title}
+              name="menu_number"
+              label="Menu Number"
+              type="number"
+              value={formData.menu_number}
               onChange={handleChange}
-              error={!!errors.title}
-              helperText={errors.title}
+              error={!!errors.menu_number}
+              helperText={errors.menu_number}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              required
+              name="name"
+              label="Name"
+              value={formData.name}
+              onChange={handleChange}
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+          </Grid>
+          <Grid item xs={12} sm={12}>
             <TextField
               fullWidth
               name="description"
               label="Description"
               multiline
-              rows={4}
+              rows={2}
               value={formData.description}
               onChange={handleChange}
             />
@@ -109,7 +139,7 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <Divider />
       <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={() => setVisible(false)}>
+          <Button variant="outlined" onClick={() => setUpdateModal(false)}>
             Cancel
           </Button>
           <Button
@@ -118,7 +148,7 @@ const CreateJobPosition = ({ setVisible, get }) => {
             onClick={handleSubmit}
             disabled={isLoading}
           >
-            Create Job Position
+            Save Changes
           </Button>
         </Stack>
       </Box>
@@ -126,4 +156,4 @@ const CreateJobPosition = ({ setVisible, get }) => {
   );
 };
 
-export default CreateJobPosition;
+export default UpdateMenu;

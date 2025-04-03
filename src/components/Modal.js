@@ -25,7 +25,7 @@ export default function AlertDialog({open, setOpen, data, agreement}) {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        {data.message}
+                        {data?.message}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

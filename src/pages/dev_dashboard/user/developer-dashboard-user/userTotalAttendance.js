@@ -1,22 +1,11 @@
 import * as React from 'react';
-import {
-  Button,
-  FormControl,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
-  Paper,
-  Grid,
-  Box,
-  useTheme
-} from "@mui/material";
-import {useState, useEffect} from "react";
+import {useState} from 'react';
+import {Box, Button, Grid, IconButton, Paper, TextField, Typography, useTheme} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import {createUserTotalAttendance, createUserUsedFreeType, updateUserTotalAttendance} from "../../../../api/user";
+import {createUserTotalAttendance, updateUserTotalAttendance} from "../../../../api/user";
 
 const SetWorkingParameters = ({setModalOpen, get, data}) => {
   const theme = useTheme();

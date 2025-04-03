@@ -1,16 +1,6 @@
 import React from 'react'
-import {
-  CBadge,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CFormCheck,
-  CListGroup,
-  CListGroupItem,
-  CRow,
-} from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {CBadge, CCard, CCardBody, CCardHeader, CCol, CFormCheck, CListGroup, CListGroupItem, CRow,} from '@coreui/react'
+import {DocsExample} from 'src/components'
 
 const ListGroups = () => {
   return (

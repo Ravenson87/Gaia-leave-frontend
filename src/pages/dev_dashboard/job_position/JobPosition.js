@@ -1,167 +1,285 @@
-import {Button, IconButton, Tooltip} from "@mui/material";
-import Paper from "@mui/material/Paper";
-import {DataGrid} from "@mui/x-data-grid";
-import * as React from "react";
-import {useEffect, useState} from "react";
-import {deleteJobPosition, getJobPosition, updateJobPosition} from "../../../api/jobPosition";
-import CreateJobPosition from "./developer-dashboard-job-position/create";
-import EditIcon from "@mui/icons-material/Edit";
+import React, {useEffect, useState} from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {deleteMenu, updateMenu} from "../../../api/menu";
+import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import {deleteJobPosition, getJobPosition} from "../../../api/jobPosition";
+import CreateJobPosition from "./developer-dashboard-job-position/create";
 import AlertDialog from "../../../components/Modal";
+import UpdateRole from "../role/developer-dashboard-role/update";
 
 const JobPosition = () => {
+  const [jobPositions, setJobPositions] = useState([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [createModal, setCreateModal] = useState(false);
-  const [jobPosition, setJobPosition] = useState([]);
-  const [editData, setEditData] = useState(null);
-  const [data, setData] = useState('');
-  const [open, setOpen] = useState(false);
-
-  const columns = [
-    {field: 'title', headerName: 'Title', width: 150, editable: true},
-    {field: 'description', headerName: 'Description', width: 250, editable: true},
-    {
-      field: 'created_by',
-      headerName: 'Created By',
-      width: 150,
-    },
-    {
-      field: 'created_date',
-      headerName: 'Created Date',
-      width: 200,
-    },
-    {
-      field: 'last_modified_by',
-      headerName: 'Last Modified By',
-      width: 150,
-    },
-    {
-      field: 'last_modified_date',
-      headerName: 'Last Modified Date',
-      width: 200,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 500,
-      renderCell: (params) => {
-        return (
-          <>
-            <Tooltip title="Edit">
-              <IconButton color="secondary" onClick={() => handleEdit(params.row)}>
-                <EditIcon/>
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Delete" className='mx-lg-2'>
-              <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-                <DeleteIcon/>
-              </IconButton>
-            </Tooltip>
-          </>
-        );
-      }
-    }
-  ]
-
-  const paginationModel = {page: 0, pageSize: 5};
+  const [updateModal, setUpdateModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [filteredJobs, setFilteredJobs] = useState(null);
+  const [alertDialog, setAlertDialog] = useState({open: false, data: null});
+  const [advancedSearch, setAdvancedSearch] = useState({
+    id: '',
+    title: '',
+    description: ''
+  });
 
   useEffect(() => {
-    get();
+    fetchJobPositions();
   }, []);
 
-  function get() {
-    getJobPosition().then(response => {
+  useEffect(() => {
+    filterAdvancedSearch();
+  }, [advancedSearch]);
+
+  const fetchJobPositions = async () => {
+    try {
+      const response = await getJobPosition();
       if (response.status === 200) {
-        setJobPosition(response.data);
-      } else if (response.status === 204) {
-        setJobPosition([]);
+        setJobPositions(response.data);
+        setFilteredJobs(response.data);
+      } else {
+        setJobPositions([]);
+        setFilteredJobs([]);
       }
-    })
-  }
-
-  function handleEdit(row) {
-    if (editData?.id) {
-      setData({
-        header: "Edit Job Position",
-        message: "Are you sure you want to edit this Job Position?",
-        type: 0,
-        data: editData
-      });
-      setOpen(true);
+    } catch (error) {
+      console.error("Failed to fetch job positions:", error);
     }
-  }
+  };
 
-  function handleRowEdit(row) {
-    setEditData(row);
-  }
+  const handleEditClick = (job) => {
+    setSelectedJob(job);
+    setCreateModal(true);
+  };
 
-  function handleDelete(row) {
-    setData({
-      header: "Delete Job Position",
-      message: "Are you sure you want to delete this Job Position?",
-      type: 1,
-      data: row
+  const handleDeleteClick = (jobId) => {
+    setAlertDialog({
+      open: true,
+      data: {
+        header: "Delete Job Position",
+        message: "Are you sure you want to delete this job position?",
+        type: 1,
+        data: jobId,
+      },
     });
-    setOpen(true);
-  }
+  };
 
-  function agreement(data) {
-    if (data.type === 0) {
-      updateJobPositionFunc(data.data);
-    } else {
-      deleteJobPositionFunc(data.data)
-    }
-  }
-
-  function updateJobPositionFunc(data) {
-    const {title, description, id} = data;
-    const json = {
-      title: title,
-      description: description
+  const filterAdvancedSearch = () => {
+    let filtered = [...jobPositions];
+    const hasAdvancedSearchValues = Object.values(advancedSearch).some(value => value.trim() !== '');
+    if (!hasAdvancedSearchValues) {
+      setFilteredJobs(jobPositions);
+      return;
     }
 
-    updateJobPosition(id, json).then((response) => {
-      setOpen(false);
-      setCreateModal(false);
-      get();
-    })
-  }
+    if (advancedSearch.title) {
+      filtered = filtered.filter(role =>
+        role.title.toLowerCase().includes(advancedSearch.title.toLowerCase())
+      );
+    }
 
-  function deleteJobPositionFunc(id) {
-    deleteJobPosition(id).then((response) => {
-      setOpen(false);
-      setCreateModal(false);
-      console.log("No. 1: deleteJobPosition")
-      get();
-    })
-  }
+    if (advancedSearch.description) {
+      filtered = filtered.filter(role =>
+        role.description && role.description.toLowerCase().includes(advancedSearch.description.toLowerCase())
+      );
+    }
+    setFilteredJobs(filtered);
+  };
+
+  const handleAdvancedSearchChange = (e) => {
+    const {name, value} = e.target;
+    console.log(name, value, 'name, value ')
+    setAdvancedSearch(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const clearAdvancedSearch = () => {
+    setAdvancedSearch({
+      title: '',
+      description: ''
+    });
+  };
+
+  const handleAlertDialogClose = () => {
+    setAlertDialog({open: false, data: null});
+  };
+
+  const handleAlertDialogAgree = async (data) => {
+    if (data.type === 1) {
+      try {
+        await deleteJobPosition(data.data);
+        fetchJobPositions();
+      } catch (error) {
+        console.error("Failed to delete job position:", error);
+      }
+    }
+    handleAlertDialogClose();
+  };
 
   return (
-    <>
-      {
-        !createModal && (
-          <>
-            <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
-            <Paper sx={{height: 400, width: '100%'}}>
-              <DataGrid
-                rows={jobPosition}
-                columns={columns}
-                initialState={{pagination: {paginationModel}}}
-                pageSizeOptions={[5, 10]}
-                sx={{border: 0}}
-                processRowUpdate={handleRowEdit}
-              />
-            </Paper>
-          </>
-        )}
-      {createModal && (<CreateJobPosition setVisible={setCreateModal} get={get}/>)}
-      <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
+    <Box sx={{width: "100%"}}>
+      {!createModal && (
+        <Card elevation={3} sx={{borderRadius: 2}}>
+          <CardHeader
+            title={<Typography variant="h5">Job Position Management</Typography>}
+            action={
+              <Button variant="contained" startIcon={<AddIcon/>} onClick={() => setCreateModal(true)}>
+                Create New Job Position
+              </Button>
+            }
+          />
+          <Divider/>
+          <CardContent>
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Created By</TableCell>
+                    <TableCell>Created Date</TableCell>
+                    <TableCell>Last Modified By</TableCell>
+                    <TableCell>Last Modified Date</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Title"
+                        name="title"
+                        value={advancedSearch.title}
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Title"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="description"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Search Description"
+                      />
+                    </TableCell>
+                    <TableCell>
+                    </TableCell>
+                    <TableCell>
+                    </TableCell>
+                    <TableCell>
+                    </TableCell>
+                    <TableCell>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{display: 'flex', justifyContent: 'flex-start'}}>
+                        <Button
+                          size="small"
+                          onClick={clearAdvancedSearch}
+                        >
+                          Clear All
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredJobs?.length > 0 ? (
+                    filteredJobs
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((item) => (
+                        <TableRow key={item.id} hover>
+                          <TableCell>{item.title}</TableCell>
+                          <TableCell>{item.description || "N/A"}</TableCell>
+                          <TableCell>{item.created_by || "N/A"}</TableCell>
+                          <TableCell>{new Date(item.created_date).toLocaleString()}</TableCell>
+                          <TableCell>{item.last_modified_by || "N/A"}</TableCell>
+                          <TableCell>{new Date(item.last_modified_date).toLocaleString()}</TableCell>
+                          <TableCell>
+                            <Stack direction="row" spacing={1}>
+                              <Tooltip title="Edit">
+                                <IconButton color="primary" onClick={() => handleEditClick(item)}>
+                                  <EditIcon/>
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton color="error" onClick={() => handleDeleteClick(item.id)}>
+                                  <DeleteIcon/>
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{py: 3}}>
+                        <Typography variant="body1" color="text.secondary">
+                          No job positions found
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              component="div"
+              count={jobPositions.length}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(event) => setRowsPerPage(parseInt(event.target.value, 10))}
+              rowsPerPageOptions={[5, 10, 25]}
+            />
+          </CardContent>
+        </Card>
+      )}
+      {updateModal && (
+        <UpdateRole
+          setUpdateModal={setUpdateModal}
+          get={fetchJobPositions}
+          editData={selectedJob}
+        />
+      )}
 
-
-    </>
+      {createModal &&
+        <CreateJobPosition
+          setVisible={setCreateModal}
+          get={fetchJobPositions}
+          editData={selectedJob}
+        />
+      }
+      <AlertDialog
+        open={alertDialog.open}
+        setOpen={handleAlertDialogClose}
+        data={alertDialog.data}
+        agreement={handleAlertDialogAgree}
+      />
+    </Box>
   );
-
-}
+};
 
 export default JobPosition;

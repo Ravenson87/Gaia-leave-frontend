@@ -1,6 +1,6 @@
 import React from 'react'
-import {NavLink, useNavigate} from 'react-router-dom'
-import {useSelector, useDispatch} from 'react-redux'
+import {useNavigate} from 'react-router-dom'
+import {useDispatch, useSelector} from 'react-redux'
 import {
   CContainer,
   CHeader,
@@ -8,16 +8,15 @@ import {
   CHeaderDivider,
   CHeaderNav,
   CHeaderToggler,
-  CNavLink,
   CNavItem,
+  CNavLink,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {cilAccountLogout, cilBell, cilEnvelopeOpen, cilList, cilMenu} from '@coreui/icons'
+import {cilAccountLogout, cilMenu} from '@coreui/icons'
 
 import {AppBreadcrumb} from './index'
 import {AppHeaderDropdown} from './header/index'
 import {logo} from 'src/assets/brand/logo'
-import {logoutUser} from "../helper/functions/cookies";
 import Cookies from "universal-cookie";
 
 const AppHeader = () => {

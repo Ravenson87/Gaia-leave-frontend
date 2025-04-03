@@ -1,71 +1,129 @@
-import * as React from 'react';
-import {Button, TextField} from "@mui/material";
-import {useState} from "react";
+import React, {useState} from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Grid,
+  IconButton,
+  Stack,
+  TextField,
+  Typography
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
+import AddIcon from "@mui/icons-material/Add";
 import {createRole} from "../../../../api/role";
-const CreateRole = ({setCreateModal, get}) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState("");
-    const [error, setError] = useState(false);
 
-    function saveData() {
-        if (0 === name?.length) {
-            setError(true);
-            return;
-        }
+const CreateRole = ({ setCreateModal, get }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-        const jsonData = {
-            name: name,
-            description: description
-        }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
+  };
 
-        createRole(jsonData).then((response) => {
-            if (response.status === 201) {
-                get();
-                setCreateModal(false);
-            }
-        })
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Role name is required";
+      valid = false;
     }
 
-    return (
-        <div className="w-100 col-md-12 row">
-            <div className="col-md-12 d-flex justify-content-end">
-                <Button variant="outlined"
-                        className="my-3"
-                        startIcon={<CloseIcon/>}
-                        onClick={() => setCreateModal(false)}
-                >Close</Button>
-            </div>
-            <div className="col-md-6">
-                <TextField className="w-100" id="outlined-basic" label="Name" variant="outlined"
-                           error={error}
-                           value={name}
-                           onChange={(e) => {
-                               setName(e.target.value);
-                               setError(false);
-                           }}/>
-                {error && (<p style={{color: 'red'}}>This field is required.</p>)}
-            </div>
-            <div className="col-md-6">
-                <TextField className="w-100"
-                           id="outlined-basic"
-                           label="Description"
-                           variant="outlined"
-                           value={description}
-                           onChange={(e) => {
-                               setDescription(e.target.value);
-                           }}/>
-            </div>
-            <div className="col-md-12 d-flex justify-content-end">
-                <Button variant="contained"
-                        className="my-3"
-                        startIcon={<SaveIcon/>}
-                        onClick={() => saveData()}>
-                    Save
-                </Button>
-            </div>
-        </div>
-    );
-}
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    setIsLoading(true);
+    try {
+      const response = await createRole(formData);
+      if (response.status === 201) {
+        get();
+        setCreateModal(false);
+      }
+    } catch (error) {
+      console.error("Error creating role:", error);
+      setErrors({ name: "Failed to create role" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card elevation={3} sx={{ borderRadius: 2 }}>
+      <CardHeader
+        title={
+          <Stack direction="row" spacing={1} alignItems="center">
+            <AddIcon color="primary" />
+            <Typography variant="h6">Create Role</Typography>
+          </Stack>
+        }
+        action={
+          <IconButton onClick={() => setCreateModal(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        }
+      />
+      <Divider />
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              required
+              name="name"
+              label="Role Name"
+              value={formData.name}
+              onChange={handleChange}
+              error={!!errors.name}
+              helperText={errors.name}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              name="description"
+              label="Description"
+              multiline
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+            />
+          </Grid>
+        </Grid>
+      </CardContent>
+      <Divider />
+      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Stack direction="row" spacing={2}>
+          <Button variant="outlined" onClick={() => setCreateModal(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon />}
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            Create Role
+          </Button>
+        </Stack>
+      </Box>
+    </Card>
+  );
+};
+
 export default CreateRole;

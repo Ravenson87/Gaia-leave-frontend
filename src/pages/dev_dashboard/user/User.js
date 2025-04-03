@@ -1,222 +1,340 @@
-import * as React from 'react';
-import {DataGrid} from '@mui/x-data-grid';
-import Paper from '@mui/material/Paper';
-import {useEffect, useState} from "react";
-import {deleteUser, getUser, updateUser} from "../../../api/user";
-import {Button, IconButton, Tooltip} from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  IconButton,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import AlertDialog from "../../../components/Modal";
+import AddIcon from "@mui/icons-material/Add";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import {deleteUser, getUser} from "../../../api/user";
 import CreateUser from "../user/developer-dashboard-user/create";
-import {getJobPosition} from "../../../api/jobPosition";
-import SetWorkingParameters from "./developer-dashboard-user/userTotalAttendance";
+import AlertDialog from "../../../components/Modal";
 import UpdateUser from "./developer-dashboard-user/update";
 import DocumentList from "./developer-dashboard-user/document";
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import SetWorkingParameters from "./developer-dashboard-user/userTotalAttendance";
+import {getJobPosition} from "../../../api/jobPosition";
 
 const User = () => {
-  const [editData, setEditData] = useState(null);
-  const [editVisible, setEditVisible] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [advancedSearch, setAdvancedSearch] = useState({
+    full_name: '',
+    username: '',
+    email: '',
+    role: '',
+    job_position: ''
+  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [createModal, setCreateModal] = useState(false);
-  const [documentVisible, setDocumentVisible] = useState(false);
-  const [documentData, setDocumentData] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [data, setData] = useState('');
-  const [user, setUser] = useState([]);
-  const [jobPositionData, setJobPositionData] = useState(null);
-  const [userTotalAttendanceVisible, setUserTotalAttendanceVisible] = useState(false);
-  const [userTotalAttendanceData, setUserTotalAttendanceData] = useState(null);
-  const columns = [
-    {field: 'id', headerName: 'ID', width: 50},
-    {field: 'first_name', headerName: 'First name', width: 150, editable: true},
-    {field: 'last_name', headerName: 'Last Name', width: 150, editable: true},
-    {field: 'username', headerName: 'Username', width: 150, editable: true},
-    {field: 'email', headerName: 'Email', width: 150, editable: true},
-    {
-      field: 'role', headerName: 'Role', width: 150, editable: true,
-      valueGetter: (params) => {
-        return params?.name ? params?.name : 'N/A'
-      }
-    },
-    {
-      field: 'job_position_id', headerName: 'Job position', width: 150, editable: true,
-      valueGetter: (params) => getJobPositionName(params)
-    },
-    {
-      field: 'created_by',
-      headerName: 'Created By',
-      width: 150,
-    },
-    {
-      field: 'created_date',
-      headerName: 'Created Date',
-      width: 200,
-    },
-    {
-      field: 'last_modified_by',
-      headerName: 'Last Modified By',
-      width: 150,
-    },
-    {
-      field: 'last_modified_date',
-      headerName: 'Last Modified Date',
-      width: 200,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 500,
-      renderCell: (params) => {
-        return (
-          <>
-            <Tooltip title="Edit">
-              <IconButton color="secondary" onClick={() => handleEdit(params.row)}>
-                <EditIcon/>
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Delete" className='mx-lg-2'>
-              <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-                <DeleteIcon/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Total attendance" className='mx-lg-2'>
-              <IconButton color="primary" onClick={() => handleTotalAttendance(params.row)}>
-                <CalendarTodayIcon/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="View Document" className='mx-lg-2'>
-              <IconButton color="primary" onClick={() => {
-                setDocumentVisible(true)
-                setDocumentData(params.row)
-              }}>
-                <AssignmentIcon/>
-              </IconButton>
-            </Tooltip>
-          </>
-        );
-      }
-    }
-  ];
-  const paginationModel = {page: 0, pageSize: 5};
+  const [editModal, setEditModal] = useState(false);
+  const [documentModal, setDocumentModal] = useState(false);
+  const [attendanceModal, setAttendanceModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [jobPositions, setJobPositions] = useState([]);
+  const [alertDialog, setAlertDialog] = useState({open: false, data: null});
 
   useEffect(() => {
-    get();
-    fetchData();
+    fetchUsers();
+    fetchJobPositions();
   }, []);
 
-  function get() {
-    getUser().then((response) => {
+  useEffect(() => {
+    filterUsers();
+  }, [users, advancedSearch]);
+
+  const filterUsers = () => {
+    let filtered = [...users];
+
+    if (advancedSearch.full_name) {
+      filtered = filtered.filter(user =>
+        user.full_name.toLowerCase().includes(advancedSearch.full_name.toLowerCase())
+      );
+    }
+    if (advancedSearch.username) {
+      filtered = filtered.filter(user =>
+        user.username.toLowerCase().includes(advancedSearch.username.toLowerCase())
+      );
+    }
+    if (advancedSearch.email) {
+      filtered = filtered.filter(user =>
+        user.email.toLowerCase().includes(advancedSearch.email.toLowerCase())
+      );
+    }
+    if (advancedSearch.role) {
+      filtered = filtered.filter(user =>
+        user.role.name.toLowerCase().includes(advancedSearch.role.toLowerCase())
+      );
+    }
+
+    if (advancedSearch.job_position) {
+      const filter = jobPositions?.find(job =>
+        job.title.toLowerCase().includes(advancedSearch.job_position.toLowerCase())
+      );
+      console.log(filter, "advancedSearch")
+      filtered = filtered.filter(user =>
+        user.job_position_id === filter.id
+      );
+      console.log(filtered, "filteredfiltered")
+    }
+
+    setFilteredUsers(filtered);
+  };
+
+  const fetchJobPositions = async () => {
+    try {
+      const response = await getJobPosition();
       if (response.status === 200) {
-        setUser(response.data);
-      } else if (response.status === 204) {
-        setUser([]);
+        setJobPositions(response.data);
+      } else {
+        setJobPositions([]);
       }
-    })
-  }
+    } catch (error) {
+      console.error("Failed to fetch job positions:", error);
+    }
+  };
 
-  function fetchData() {
-    getJobPosition().then(r => {
-      if (r.status === 200) {
-        setJobPositionData(r.data)
+  const fetchUsers = async () => {
+    try {
+      const response = await getUser();
+      setUsers(response.status === 200 ? response.data : []);
+      setFilteredUsers(response.status === 200 ? response.data : []);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
+
+  const handleEditClick = (user) => {
+    setSelectedUser(user);
+    setEditModal(true);
+  };
+
+  const handleDeleteClick = (userId) => {
+    setAlertDialog({
+      open: true,
+      data: {
+        header: "Delete User",
+        message: "Are you sure you want to delete this user?",
+        type: 1,
+        data: userId,
+      },
+    });
+  };
+
+  const handleAlertDialogClose = () => {
+    setAlertDialog({open: false, data: null});
+  };
+
+  const handleAdvancedSearchChange = (e) => {
+    const {name, value} = e.target;
+    setAdvancedSearch(prev => ({...prev, [name]: value}));
+  };
+
+  const clearAdvancedSearch = () => {
+    setAdvancedSearch({
+      full_name: '',
+      username: '',
+      email: '',
+      role: '',
+      job_position: ''
+    });
+  };
+
+  const handleAlertDialogAgree = async (data) => {
+    if (data.type === 1) {
+      try {
+        await deleteUser(data.data);
+        fetchUsers();
+      } catch (error) {
+        console.error("Failed to delete user:", error);
       }
-    });
-  }
-
-  function getJobPositionName(job_position_id) {
-    const jobPosition = jobPositionData.find(r => r.id === job_position_id);
-    return jobPosition ? jobPosition.title : "N/A";
-  }
-
-  function handleEdit(data) {
-    setEditData(data);
-    setEditVisible(true);
-    if (editData?.id) {
-      setData({
-        header: "Edit user",
-        message: "Are you sure you want to edit this user?",
-        type: 0,
-        data: editData
-      });
-      setOpen(true);
     }
-  }
-
-  function handleDelete(row) {
-    setData({
-      header: "Delete user",
-      message: "Are you sure you want to delete this user?",
-      type: 1,
-      data: row
-    });
-    setOpen(true);
-  }
-
-  function handleRowEdit(row) {
-    setEditData(row);
-  }
-
-  function agreement(data) {
-    if (data.type === 0) {
-      updateUserFunc(data.data);
-    } else {
-      deleteUserFunc(data.data)
-    }
-  }
-
-  function updateUserFunc(data) {
-    const {name, description, id} = data;
-    const json = {
-      name: name,
-      description: description,
-    }
-    updateUser(id, json).then((response) => {
-      setOpen(false);
-      setCreateModal(false);
-      get();
-    })
-  }
-
-  function deleteUserFunc(id) {
-    deleteUser(id).then((response) => {
-      setOpen(false);
-      setCreateModal(false);
-      get();
-    })
-  }
-
-  function handleTotalAttendance(data) {
-    console.log(data)
-    setUserTotalAttendanceVisible(true);
-    setUserTotalAttendanceData(data);
-  }
-
+    handleAlertDialogClose();
+  };
+  console.log("jobPositions", jobPositions);
   return (
-    <>
-      {!createModal && !userTotalAttendanceVisible && !editVisible && !documentVisible && (
-        <>
-          <Button variant="contained" className="my-3" onClick={() => setCreateModal(true)}>Create</Button>
-          <Paper sx={{height: 400, width: '100%'}}>
-            <DataGrid
-              rows={user}
-              columns={columns}
-              initialState={{pagination: {paginationModel}}}
-              pageSizeOptions={[5, 10]}
-              sx={{border: 0}}
-              processRowUpdate={handleRowEdit}
+    <Box sx={{width: "100%"}}>
+      {!createModal && !editModal && !documentModal && !attendanceModal && (
+        <Card elevation={3} sx={{borderRadius: 2}}>
+          <CardHeader
+            title={<Typography variant="h5">User Management</Typography>}
+            action={
+              <Button variant="contained" startIcon={<AddIcon/>} onClick={() => setCreateModal(true)}>
+                Create New User
+              </Button>
+            }
+          />
+          <Divider/>
+          <CardContent>
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Full name</TableCell>
+                    <TableCell>Username</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Job position</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="full_name"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Full name"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="username"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Username"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="email"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Email"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="role"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Role"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        name="job_position"
+                        onChange={handleAdvancedSearchChange}
+                        placeholder="Job position"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{display: 'flex', justifyContent: 'flex-start'}}>
+                        <Button
+                          size="small"
+                          onClick={clearAdvancedSearch}
+                        >
+                          Clear All
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {
+                    filteredUsers.length > 0 ?
+                      (
+                        filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user) => (
+                          <TableRow key={user.id} hover>
+                            <TableCell>{user.first_name + " " + user.last_name}</TableCell>
+                            <TableCell>{user.username}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>{user.role.name || "N/A"}</TableCell>
+                            <TableCell>{jobPositions?.find(job => job.id === user.job_position_id).title || "N/A"}</TableCell>
+                            <TableCell>
+                              <Stack direction="row" spacing={1}>
+                                <Tooltip title="Edit">
+                                  <IconButton color="primary" onClick={() => handleEditClick(user)}>
+                                    <EditIcon/>
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete">
+                                  <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
+                                    <DeleteIcon/>
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Total Attendance">
+                                  <IconButton color="primary" onClick={() => {
+                                    setAttendanceModal(true);
+                                    setSelectedUser(user);
+                                  }}>
+                                    <CalendarTodayIcon/>
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="View Documents">
+                                  <IconButton color="primary" onClick={() => {
+                                    setDocumentModal(true);
+                                    setSelectedUser(user);
+                                  }}>
+                                    <AssignmentIcon/>
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} align="center" sx={{py: 3}}>
+                            <Typography variant="body1" color="text.secondary">
+                              No users found
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              component="div"
+              count={users.length}
+              page={page}
+              onPageChange={(event, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(event) => setRowsPerPage(parseInt(event.target.value, 10))}
+              rowsPerPageOptions={[5, 10, 25]}
             />
-          </Paper>
-        </>
+          </CardContent>
+        </Card>
       )}
-      {createModal && (<CreateUser setCreateModal={setCreateModal} get={get}/>)}
-      {editVisible && (<UpdateUser setUpdateModal={setEditVisible} get={get} editData={editData}/>)}
-      {documentVisible && (<DocumentList data={documentData} setDocumentVisible={setDocumentVisible}/>)}
-      {userTotalAttendanceVisible && (
-        <SetWorkingParameters setModalOpen={setUserTotalAttendanceVisible} get={get} data={userTotalAttendanceData}/>)
-      }
-      <AlertDialog open={open} setOpen={setOpen} data={data} agreement={agreement}/>
-    </>
-  )
-}
-export default User
+      {editModal && <UpdateUser setUpdateModal={setEditModal} get={fetchUsers} editData={selectedUser}/>}
+      {createModal && <CreateUser setCreateModal={setCreateModal} get={fetchUsers}/>}
+      {documentModal && <DocumentList data={selectedUser} setDocumentVisible={setDocumentModal}/>}
+      {attendanceModal &&
+        <SetWorkingParameters setModalOpen={setAttendanceModal} get={fetchUsers} data={selectedUser}/>}
+      <AlertDialog open={alertDialog.open} setOpen={handleAlertDialogClose} data={alertDialog.data}
+                   agreement={handleAlertDialogAgree}/>
+    </Box>
+  );
+};
+
+export default User;

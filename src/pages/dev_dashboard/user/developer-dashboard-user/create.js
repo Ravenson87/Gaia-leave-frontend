@@ -1,225 +1,308 @@
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+  Box,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
   FormControl,
+  FormHelperText,
+  Grid,
   IconButton,
-  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
+  Stack,
   TextField,
+  Typography,
+  useMediaQuery,
   useTheme
-} from "@mui/material";
-import {useEffect, useState} from "react";
-import CloseIcon from "@mui/icons-material/Close";
-import SaveIcon from "@mui/icons-material/Save";
-import {createUser} from "../../../../api/user";
-import {getJobPosition} from "../../../../api/jobPosition";
-import {getRole} from "../../../../api/role";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import {createUser} from '../../../../api/user';
+import {getJobPosition} from '../../../../api/jobPosition';
+import {getRole} from '../../../../api/role';
 
 const CreateUser = ({setCreateModal, get}) => {
   const theme = useTheme();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [jobPosition, setJobPosition] = useState(null);
-  const [role, setRole] = useState(null);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    username: '',
+    jobPosition: null,
+    role: null
+  });
+
   const [roleData, setRoleData] = useState([]);
   const [jobPositionData, setJobPositionData] = useState([]);
-  const [error, setError] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  function fetchData() {
-    getJobPosition().then(r => {
-      if (r.status === 200) {
-        setJobPositionData(r.data)
-      }
-    });
-    getRole().then(r => {
-      if (r.status === 200) {
-        setRoleData(r.data)
-      }
-    });
-  }
+  const fetchData = async () => {
+    try {
+      const [jobPositions, roles] = await Promise.all([
+        getJobPosition(),
+        getRole()
+      ]);
 
-  function saveData() {
-    if (0 === firstName?.length) {
-      setError(true);
+      if (jobPositions.status === 200) {
+        setJobPositionData(jobPositions.data);
+      }
+
+      if (roles.status === 200) {
+        setRoleData(roles.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
+
+  const handleInputChange = (field) => (event) => {
+    setFormData({
+      ...formData,
+      [field]: event.target.value
+    });
+
+    // Clear error for this field if present
+    if (errors[field]) {
+      setErrors({
+        ...errors,
+        [field]: null
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName?.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData.email?.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.username?.trim()) {
+      newErrors.username = 'Username is required';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'Role is required';
+    }
+
+    if (!formData.jobPosition) {
+      newErrors.jobPosition = 'Job position is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const saveData = async () => {
+    if (!validateForm()) {
       return;
     }
 
-    const jsonData = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      username: username,
-      password: password,
-      role_id: role.id,
-      job_position_id: jobPosition.id,
-      status: 1,
-    }
+    setIsLoading(true);
 
-    createUser(jsonData).then((response) => {
+    try {
+      const jsonData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        username: formData.username,
+        role_id: formData.role.id,
+        job_position_id: formData.jobPosition.id,
+        status: 1,
+      };
+
+      const response = await createUser(jsonData);
+
       if (response.status === 201) {
         get();
         setCreateModal(false);
       }
-    })
-  }
-
-  const handleChange = (event) => {
-    setJobPosition(event.target.value);
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const handleChangeRole = (event) => {
-    setRole(event.target.value);
-  };
-
-  const getStyles = (name, theme) => {
-    return {
-      display: 'block',
-      width: '100%',
-      padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.paper,
-    };
-  };
-
-  function handleClickShowPassword() {
-    setShowPassword(!showPassword);
-  }
 
   return (
-    <div className="w-100 col-md-12 row">
-      <div className="col-md-12 d-flex justify-content-end">
-        <Button variant="outlined"
-                className="my-3"
-                startIcon={<CloseIcon/>}
-                onClick={() => setCreateModal(false)}
-        >Close</Button>
-      </div>
-      <div className="col-md-3">
-        <FormControl className="w-100 mb-2">
-          <InputLabel id="demo-simple-select-autowidth-label">Job position</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={jobPosition}
-            onChange={handleChange}
-            label="Job position"
-            className="w-100"
+    <Card
+      elevation={3}
+      sx={{
+        width: '100%',
+        overflow: 'visible',
+        position: 'relative',
+        borderRadius: 2
+      }}
+    >
+      <CardHeader
+        title={
+          <Stack direction="row" spacing={1} alignItems="center">
+            <PersonAddIcon color="primary"/>
+            <Typography variant="h6">Create New User</Typography>
+          </Stack>
+        }
+        action={
+          <IconButton
+            onClick={() => setCreateModal(false)}
+            aria-label="close"
+            size="small"
+            sx={{
+              bgcolor: theme.palette.grey[100],
+              '&:hover': {bgcolor: theme.palette.grey[200]}
+            }}
           >
-            {jobPositionData?.map((item, index) => (
-              <MenuItem value={item}
-                        className="w-100"
-                        style={getStyles(name, theme)}
+            <CloseIcon fontSize="small"/>
+          </IconButton>
+        }
+        sx={{
+          pb: 1,
+          '& .MuiCardHeader-action': {m: 0}
+        }}
+      />
+
+      <Divider/>
+
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.jobPosition}>
+              <InputLabel id="job-position-label">Job Position</InputLabel>
+              <Select
+                labelId="job-position-label"
+                id="job-position-select"
+                value={formData.jobPosition}
+                onChange={handleInputChange('jobPosition')}
+                label="Job Position"
               >
-                <em>{item?.title}</em>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-      <div className="col-md-3">
-        <FormControl className="w-100 mb-2">
-          <InputLabel id="demo-simple-select-autowidth-label" className="w-100">Role</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={role}
-            onChange={handleChangeRole}
-            label="Age"
-            className="w-100"
+                {jobPositionData?.map((item) => (
+                  <MenuItem key={item.id} value={item}>
+                    {item?.title}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.jobPosition && <FormHelperText>{errors.jobPosition}</FormHelperText>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.role}>
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                labelId="role-label"
+                id="role-select"
+                value={formData.role}
+                onChange={handleInputChange('role')}
+                label="Role"
+              >
+                {roleData?.map((item) => (
+                  <MenuItem key={item.id} value={item}>
+                    {item?.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.role && <FormHelperText>{errors.role}</FormHelperText>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="first-name"
+              label="First Name"
+              variant="outlined"
+              value={formData.firstName}
+              onChange={handleInputChange('firstName')}
+              error={!!errors.firstName}
+              helperText={errors.firstName}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="last-name"
+              label="Last Name"
+              variant="outlined"
+              value={formData.lastName}
+              onChange={handleInputChange('lastName')}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="username"
+              label="Username"
+              variant="outlined"
+              value={formData.username}
+              onChange={handleInputChange('username')}
+              error={!!errors.username}
+              helperText={errors.username}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="email"
+              type="email"
+              label="Email"
+              variant="outlined"
+              value={formData.email}
+              onChange={handleInputChange('email')}
+              error={!!errors.email}
+              helperText={errors.email}
+              required
+            />
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      <Divider/>
+
+      <Box sx={{p: 2, display: 'flex', justifyContent: 'flex-end'}}>
+        <Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{width: isMobile ? '100%' : 'auto'}}>
+          <Button
+            variant="outlined"
+            startIcon={<CloseIcon/>}
+            onClick={() => setCreateModal(false)}
+            fullWidth={isMobile}
           >
-            {roleData?.map((item, index) => (
-              <MenuItem value={item}
-                        className="w-100"
-                        style={getStyles(name, theme)}
-              >
-                <em>{item?.name}</em>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100" id="outlined-basic" label="First name" variant="outlined"
-                   error={error}
-                   value={firstName}
-                   onChange={(e) => {
-                     setFirstName(e.target.value);
-                     setError(false);
-                   }}/>
-        {error && (<p style={{color: 'red'}}>This field is required.</p>)}
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   id="outlined-basic"
-                   label="Last name"
-                   variant="outlined"
-                   value={lastName}
-                   onChange={(e) => {
-                     setLastName(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   type="text"
-                   id="outlined-basic"
-                   label="Username"
-                   variant="outlined"
-                   value={username}
-                   onChange={(e) => {
-                     setUsername(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   type="email"
-                   id="outlined-basic"
-                   label="Email"
-                   variant="outlined"
-                   value={email}
-                   onChange={(e) => {
-                     setEmail(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-3">
-        <TextField
-          className="w-100"
-          type={showPassword ? 'text' : 'password'}
-          id="outlined-basic"
-          label="Password"
-          variant="outlined"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleClickShowPassword} edge="end">
-                  {showPassword ? <VisibilityOffIcon/> : <VisibilityIcon/>}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </div>
-      <div className="col-md-12 d-flex justify-content-end">
-        <Button variant="contained"
-                className="my-3"
-                startIcon={<SaveIcon/>}
-                onClick={() => saveData()}>
-          Save
-        </Button>
-      </div>
-    </div>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon/>}
+            onClick={saveData}
+            disabled={isLoading}
+            fullWidth={isMobile}
+          >
+            Save User
+          </Button>
+        </Stack>
+      </Box>
+    </Card>
   );
-}
+};
+
 export default CreateUser;

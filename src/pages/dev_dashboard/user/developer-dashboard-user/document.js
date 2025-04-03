@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {documentUpload} from "../../../../api/user";
 
 const DocumentList = ({data, setDocumentVisible}) => {

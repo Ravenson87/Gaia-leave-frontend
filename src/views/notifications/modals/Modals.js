@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react'
 import {
   CButton,
   CCard,
@@ -15,7 +15,7 @@ import {
   CRow,
   CTooltip,
 } from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {DocsExample} from 'src/components'
 
 const LiveDemo = () => {
   const [visible, setVisible] = useState(false)

@@ -1,209 +1,347 @@
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+  Box,
   Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
   FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
+  Stack,
+  Switch,
   TextField,
+  Typography,
+  useMediaQuery,
   useTheme
-} from "@mui/material";
-import {useEffect, useState} from "react";
-import CloseIcon from "@mui/icons-material/Close";
-import SaveIcon from "@mui/icons-material/Save";
-import {createUser, updateUser} from "../../../../api/user";
-import {getJobPosition} from "../../../../api/jobPosition";
-import {getRole} from "../../../../api/role";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
+import {updateUser} from '../../../../api/user';
+import {getJobPosition} from '../../../../api/jobPosition';
+import {getRole} from '../../../../api/role';
 
 const UpdateUser = ({setUpdateModal, get, editData}) => {
   const theme = useTheme();
-  const [firstName, setFirstName] = useState(editData.first_name || '');
-  const [lastName, setLastName] = useState(editData.last_name || '');
-  const [email, setEmail] = useState(editData.email || '');
-  const [username, setUsername] = useState(editData.username || '');
-  const [showPassword, setShowPassword] = useState(false);
-  const [jobPosition, setJobPosition] = useState(null);
-  const [role, setRole] = useState(null);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [formData, setFormData] = useState({
+    firstName: editData.first_name || '',
+    lastName: editData.last_name || '',
+    email: editData.email || '',
+    username: editData.username || '',
+    jobPosition: null,
+    role: null,
+    status: editData.status === 1
+  });
+
   const [roleData, setRoleData] = useState([]);
   const [jobPositionData, setJobPositionData] = useState([]);
-  const [error, setError] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  function fetchData() {
-    getJobPosition().then(r => {
-      if (r.status === 200) {
-        setJobPositionData(r.data)
-        const job_position = r.data.find((job) => job.id === editData.job_position_id);
-        setJobPosition(job_position);
-      }
-    });
-    getRole().then(r => {
-      if (r.status === 200) {
-        setRoleData(r.data)
-        const role = r.data.find((role) => role.id === editData.role_id);
-        setRole(role);
-      }
-    });
-  }
+  const fetchData = async () => {
+    try {
+      const [jobPositions, roles] = await Promise.all([
+        getJobPosition(),
+        getRole()
+      ]);
 
-  function saveData() {
-    if (0 === firstName?.length) {
-      setError(true);
+      if (jobPositions.status === 200) {
+        setJobPositionData(jobPositions.data);
+        const jobPosition = jobPositions.data.find((job) => job.id === editData.job_position_id);
+        setFormData(prev => ({...prev, jobPosition}));
+      }
+
+      if (roles.status === 200) {
+        setRoleData(roles.data);
+        const role = roles.data.find((role) => role.id === editData.role_id);
+        setFormData(prev => ({...prev, role}));
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
+
+  const handleInputChange = (field) => (event) => {
+    setFormData({
+      ...formData,
+      [field]: event.target.value
+    });
+
+    if (errors[field]) {
+      setErrors({
+        ...errors,
+        [field]: null
+      });
+    }
+  };
+
+  const handleStatusChange = (event) => {
+    setFormData({
+      ...formData,
+      status: event.target.checked
+    });
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.firstName?.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!formData.email?.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!formData.username?.trim()) {
+      newErrors.username = 'Username is required';
+    }
+
+    if (!formData.role) {
+      newErrors.role = 'Role is required';
+    }
+
+    if (!formData.jobPosition) {
+      newErrors.jobPosition = 'Job position is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const saveData = async () => {
+    if (!validateForm()) {
       return;
     }
 
-    const jsonData = {
-      first_name: firstName,
-      last_name: lastName,
-      email: email,
-      username: username,
-      role_id: role.id,
-      job_position_id: jobPosition.id,
-      status: 1,
-    }
+    setIsLoading(true);
 
-    const formData = new FormData();
-    formData.append("first_name", firstName);
-    formData.append("last_name", lastName);
-    formData.append("email", email);
-    formData.append("username", username);
-    formData.append("role_id", role.id);
-    formData.append("job_position_id", jobPosition.id);
-    formData.append("status", 1);
+    try {
+      const formDataObj = new FormData();
+      formDataObj.append("first_name", formData.firstName);
+      formDataObj.append("last_name", formData.lastName);
+      formDataObj.append("email", formData.email);
+      formDataObj.append("username", formData.username);
+      formDataObj.append("role_id", formData.role.id);
+      formDataObj.append("job_position_id", formData.jobPosition.id);
+      formDataObj.append("status", formData.status ? 1 : 0);
 
+      const response = await updateUser(editData.id, formDataObj);
 
-    updateUser(editData.id, formData).then((response) => {
       if (response.status === 201) {
         get();
         setUpdateModal(false);
       }
-    })
-  }
-
-  const handleChange = (event) => {
-    setJobPosition(event.target.value);
-  };
-
-  const handleChangeRole = (event) => {
-    setRole(event.target.value);
-  };
-
-  const getStyles = (name, theme) => {
-    return {
-      display: 'block',
-      width: '100%',
-      padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.paper,
-    };
+    } catch (error) {
+      console.error('Failed to update user:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="w-100 col-md-12 row">
-      <div className="col-md-12 d-flex justify-content-end">
-        <Button variant="outlined"
-                className="my-3"
-                startIcon={<CloseIcon/>}
-                onClick={() => setUpdateModal(false)}
-        >Close</Button>
-      </div>
-      <div className="col-md-3">
-        <FormControl className="w-100 mb-2">
-          <InputLabel id="demo-simple-select-autowidth-label">Job position</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={jobPosition}
-            onChange={handleChange}
-            label="Job position"
-            className="w-100"
+    <Card
+      elevation={3}
+      sx={{
+        width: '100%',
+        overflow: 'visible',
+        position: 'relative',
+        borderRadius: 2
+      }}
+    >
+      <CardHeader
+        title={
+          <Stack direction="row" spacing={1} alignItems="center">
+            <EditIcon color="primary"/>
+            <Typography variant="h6">Edit User</Typography>
+          </Stack>
+        }
+        action={
+          <IconButton
+            onClick={() => setUpdateModal(false)}
+            aria-label="close"
+            size="small"
+            sx={{
+              bgcolor: theme.palette.grey[100],
+              '&:hover': {bgcolor: theme.palette.grey[200]}
+            }}
           >
-            {jobPositionData?.map((item, index) => (
-              <MenuItem value={item}
-                        className="w-100"
-                        style={getStyles(name, theme)}
+            <CloseIcon fontSize="small"/>
+          </IconButton>
+        }
+        sx={{
+          pb: 1,
+          '& .MuiCardHeader-action': {m: 0}
+        }}
+      />
+
+      <Divider/>
+
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.jobPosition}>
+              <InputLabel id="job-position-label">Job Position</InputLabel>
+              <Select
+                labelId="job-position-label"
+                id="job-position-select"
+                value={formData.jobPosition}
+                onChange={handleInputChange('jobPosition')}
+                label="Job Position"
               >
-                <em>{item?.title}</em>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-      <div className="col-md-3">
-        <FormControl className="w-100 mb-2">
-          <InputLabel id="demo-simple-select-autowidth-label" className="w-100">Role</InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={role}
-            onChange={handleChangeRole}
-            label="Age"
-            className="w-100"
+                {jobPositionData?.map((item) => (
+                  <MenuItem key={item.id} value={item}>
+                    {item?.title}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.jobPosition && <FormHelperText>{errors.jobPosition}</FormHelperText>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.role}>
+              <InputLabel id="role-label">Role</InputLabel>
+              <Select
+                labelId="role-label"
+                id="role-select"
+                value={formData.role}
+                onChange={handleInputChange('role')}
+                label="Role"
+              >
+                {roleData?.map((item) => (
+                  <MenuItem key={item.id} value={item}>
+                    {item?.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.role && <FormHelperText>{errors.role}</FormHelperText>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="first-name"
+              label="First Name"
+              variant="outlined"
+              value={formData.firstName}
+              onChange={handleInputChange('firstName')}
+              error={!!errors.firstName}
+              helperText={errors.firstName}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="last-name"
+              label="Last Name"
+              variant="outlined"
+              value={formData.lastName}
+              onChange={handleInputChange('lastName')}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="username"
+              label="Username"
+              variant="outlined"
+              value={formData.username}
+              onChange={handleInputChange('username')}
+              error={!!errors.username}
+              helperText={errors.username}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              id="email"
+              type="email"
+              label="Email"
+              variant="outlined"
+              value={formData.email}
+              onChange={handleInputChange('email')}
+              error={!!errors.email}
+              helperText={errors.email}
+              required
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <Card variant="outlined" sx={{bgcolor: theme.palette.grey[50]}}>
+              <CardContent>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.status}
+                      onChange={handleStatusChange}
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography variant="body1">
+                      {formData.status ? "Account Active" : "Account Inactive"}
+                    </Typography>
+                  }
+                />
+                <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1}}>
+                  {formData.status
+                    ? "User can log in and access the system"
+                    : "User cannot log in or access the system"}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      <Divider/>
+
+      <Box sx={{p: 2, display: 'flex', justifyContent: 'flex-end'}}>
+        <Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{width: isMobile ? '100%' : 'auto'}}>
+          <Button
+            variant="outlined"
+            startIcon={<CloseIcon/>}
+            onClick={() => setUpdateModal(false)}
+            fullWidth={isMobile}
           >
-            {roleData?.map((item, index) => (
-              <MenuItem value={item}
-                        className="w-100"
-                        style={getStyles(name, theme)}
-              >
-                <em>{item?.name}</em>
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100" id="outlined-basic" label="First name" variant="outlined"
-                   error={error}
-                   value={firstName}
-                   onChange={(e) => {
-                     setFirstName(e.target.value);
-                     setError(false);
-                   }}/>
-        {error && (<p style={{color: 'red'}}>This field is required.</p>)}
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   id="outlined-basic"
-                   label="Last name"
-                   variant="outlined"
-                   value={lastName}
-                   onChange={(e) => {
-                     setLastName(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   type="text"
-                   id="outlined-basic"
-                   label="Username"
-                   variant="outlined"
-                   value={username}
-                   onChange={(e) => {
-                     setUsername(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-3">
-        <TextField className="w-100"
-                   type="email"
-                   id="outlined-basic"
-                   label="Email"
-                   variant="outlined"
-                   value={email}
-                   onChange={(e) => {
-                     setEmail(e.target.value);
-                   }}/>
-      </div>
-      <div className="col-md-12 d-flex justify-content-end">
-        <Button variant="contained"
-                className="my-3"
-                startIcon={<SaveIcon/>}
-                onClick={() => saveData()}>
-          Save
-        </Button>
-      </div>
-    </div>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon/>}
+            onClick={saveData}
+            disabled={isLoading}
+            fullWidth={isMobile}
+            color={formData.status ? "primary" : "warning"}
+          >
+            Save Changes
+          </Button>
+        </Stack>
+      </Box>
+    </Card>
   );
-}
+};
+
 export default UpdateUser;

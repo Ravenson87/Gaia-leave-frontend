@@ -12,15 +12,15 @@ import {
   CWidgetStatsE,
   CWidgetStatsF,
 } from '@coreui/react'
-import { getStyle } from '@coreui/utils'
+import {getStyle} from '@coreui/utils'
 import CIcon from '@coreui/icons-react'
 import {
   cilArrowRight,
   cilBasket,
   cilBell,
   cilChartPie,
-  cilMoon,
   cilLaptop,
+  cilMoon,
   cilPeople,
   cilSettings,
   cilSpeech,
@@ -28,8 +28,8 @@ import {
   cilUser,
   cilUserFollow,
 } from '@coreui/icons'
-import { CChartBar, CChartLine } from '@coreui/react-chartjs'
-import { DocsExample } from 'src/components'
+import {CChartBar, CChartLine} from '@coreui/react-chartjs'
+import {DocsExample} from 'src/components'
 
 import WidgetsBrand from './WidgetsBrand'
 import WidgetsDropdown from './WidgetsDropdown'

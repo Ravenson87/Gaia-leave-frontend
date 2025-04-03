@@ -12,7 +12,7 @@ import {
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+import {cilLockLocked, cilUser} from '@coreui/icons'
 
 const Register = () => {
   return (

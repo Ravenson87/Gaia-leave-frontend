@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {
   Box,
   Button,
@@ -14,16 +14,27 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
-import AddIcon from "@mui/icons-material/Add";
-import {createJobPosition} from "../../../../api/jobPosition";
+import EditIcon from "@mui/icons-material/Edit";
+import {updateJobPosition} from "../../../../api/jobPosition";
 
-const CreateJobPosition = ({ setVisible, get }) => {
+const UpdateJobPosition = ({ setUpdateModal, get, editData }) => {
   const [formData, setFormData] = useState({
+    id: "",
     title: "",
     description: "",
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        id: editData.id,
+        title: editData.title || "",
+        description: editData.description || "",
+      });
+    }
+  }, [editData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,14 +61,14 @@ const CreateJobPosition = ({ setVisible, get }) => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const response = await createJobPosition(formData);
-      if (response.status === 201) {
+      const response = await updateJobPosition(formData.id, formData);
+      if (response.status === 200) {
         get();
-        setVisible(false);
+        setUpdateModal(false);
       }
     } catch (error) {
-      console.error("Error creating job position:", error);
-      setErrors({ title: "Failed to create job position" });
+      console.error("Error updating job position:", error);
+      setErrors({ title: "Failed to update job position" });
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +79,12 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <AddIcon color="primary" />
-            <Typography variant="h6">Create Job Position</Typography>
+            <EditIcon color="primary" />
+            <Typography variant="h6">Edit Job Position</Typography>
           </Stack>
         }
         action={
-          <IconButton onClick={() => setVisible(false)} size="small">
+          <IconButton onClick={() => setUpdateModal(false)} size="small">
             <CloseIcon />
           </IconButton>
         }
@@ -81,6 +92,14 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <Divider />
       <CardContent>
         <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              disabled
+              fullWidth
+              label="Position ID"
+              value={formData.id}
+            />
+          </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -109,7 +128,7 @@ const CreateJobPosition = ({ setVisible, get }) => {
       <Divider />
       <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={() => setVisible(false)}>
+          <Button variant="outlined" onClick={() => setUpdateModal(false)}>
             Cancel
           </Button>
           <Button
@@ -118,7 +137,7 @@ const CreateJobPosition = ({ setVisible, get }) => {
             onClick={handleSubmit}
             disabled={isLoading}
           >
-            Create Job Position
+            Save Changes
           </Button>
         </Stack>
       </Box>
@@ -126,4 +145,4 @@ const CreateJobPosition = ({ setVisible, get }) => {
   );
 };
 
-export default CreateJobPosition;
+export default UpdateJobPosition;

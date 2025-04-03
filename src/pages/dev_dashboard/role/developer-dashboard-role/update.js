@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from 'react';
 import {
   Box,
   Button,
@@ -10,27 +10,39 @@ import {
   IconButton,
   Stack,
   TextField,
-  Typography
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import SaveIcon from "@mui/icons-material/Save";
-import AddIcon from "@mui/icons-material/Add";
-import {createMenu} from "../../../../api/menu";
+  Typography,
+  useTheme
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
+import {updateRole} from '../../../../api/role';
 
-const CreateMenu = ({ setVisible, get }) => {
+const UpdateRole = ({setUpdateModal, get, editData}) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
-    menu_number: null,
-    name: "",
-    description: "",
+    id: '',
+    name: '',
+    description: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (editData) {
+      setFormData({
+        id: editData.id,
+        name: editData.name || '',
+        description: editData.description || ''
+      });
+    }
+  }, [editData]);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const {name, value} = e.target;
+    setFormData({...formData, [name]: value});
     if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
+      setErrors({...errors, [name]: ''});
     }
   };
 
@@ -38,12 +50,8 @@ const CreateMenu = ({ setVisible, get }) => {
     let valid = true;
     const newErrors = {};
 
-    if (!formData.menu_number) {
-      newErrors.menu_number = "Menu number is required";
-      valid = false;
-    }
     if (!formData.name.trim()) {
-      newErrors.name = "Menu name is required";
+      newErrors.name = 'Role name is required';
       valid = false;
     }
 
@@ -55,88 +63,83 @@ const CreateMenu = ({ setVisible, get }) => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      const response = await createMenu(formData);
-      if (response.status === 201) {
+      const response = await updateRole(formData.id, formData);
+      if (response.status === 200) {
         get();
-        setVisible(false);
+        setUpdateModal(false);
       }
     } catch (error) {
-      console.error("Error creating menu:", error);
-      setErrors({ name: "Failed to create menu" });
+      console.error('Error updating role:', error);
+      setErrors({name: 'Failed to update role'});
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card elevation={3} sx={{ borderRadius: 2 }}>
+    <Card elevation={3} sx={{borderRadius: 2}}>
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <AddIcon color="primary" />
-            <Typography variant="h6">Create Menu</Typography>
+            <EditIcon color="primary"/>
+            <Typography variant="h6">Edit Role</Typography>
           </Stack>
         }
         action={
-          <IconButton onClick={() => setVisible(false)} size="small">
-            <CloseIcon />
+          <IconButton onClick={() => setUpdateModal(false)} size="small">
+            <CloseIcon/>
           </IconButton>
         }
       />
-      <Divider />
+      <Divider/>
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <TextField
+              disabled
               fullWidth
-              required
-              name="menu_number"
-              label="Menu Number"
-              type="number"
-              value={formData.menu_number}
-              onChange={handleChange}
-              error={!!errors.menu_number}
-              helperText={errors.menu_number}
+              label="Role ID"
+              value={formData.id}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               required
               name="name"
-              label="Name"
+              label="Role Name"
               value={formData.name}
               onChange={handleChange}
               error={!!errors.name}
               helperText={errors.name}
             />
           </Grid>
-          <Grid item xs={12} sm={12}>
+          <Grid item xs={12}>
             <TextField
               fullWidth
               name="description"
               label="Description"
               multiline
-              rows={2}
+              rows={4}
               value={formData.description}
               onChange={handleChange}
             />
           </Grid>
         </Grid>
       </CardContent>
-      <Divider />
-      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+      <Divider/>
+      <Box sx={{p: 2, display: 'flex', justifyContent: 'flex-end'}}>
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={() => setVisible(false)}>
+          <Button variant="outlined" onClick={() => setUpdateModal(false)}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            startIcon={<SaveIcon />}
+            startIcon={<SaveIcon/>}
             onClick={handleSubmit}
             disabled={isLoading}
           >
-            Create Menu
+            Save Changes
           </Button>
         </Stack>
       </Box>
@@ -144,4 +147,4 @@ const CreateMenu = ({ setVisible, get }) => {
   );
 };
 
-export default CreateMenu;
+export default UpdateRole;

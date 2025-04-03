@@ -1,15 +1,6 @@
 import React from 'react'
-import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCarousel,
-  CCarouselCaption,
-  CCarouselItem,
-  CCol,
-  CRow,
-} from '@coreui/react'
-import { DocsExample } from 'src/components'
+import {CCard, CCardBody, CCardHeader, CCarousel, CCarouselCaption, CCarouselItem, CCol, CRow,} from '@coreui/react'
+import {DocsExample} from 'src/components'
 
 import AngularImg from 'src/assets/images/angular.jpg'
 import ReactImg from 'src/assets/images/react.jpg'

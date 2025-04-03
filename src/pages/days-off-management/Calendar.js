@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {getCalendar, updateCalendarByType} from "../../api/day-off-management/dayOffManagement";
 import {Button, FormControl, InputLabel, MenuItem, Select, useTheme} from "@mui/material";
-import Preloader from "../../components/Preloader";
-import CircularProgress from "@mui/material/CircularProgress";
 import FullPageLoader from "../../components/Preloader";
 
 
