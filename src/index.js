@@ -5,13 +5,18 @@ import {createRoot} from 'react-dom/client'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
 import {Provider} from 'react-redux'
-import store from './store'
+import {store} from './store/store';
+import PersistProvider from "./store/providers/persist-provider";
 
-createRoot(document.getElementById('root')).render(
+const container = document.getElementById("root");
+const root = createRoot(container);
+root.render(
   <Provider store={store}>
-    <App />
-  </Provider>,
-)
+    <PersistProvider>
+      <App />
+    </PersistProvider>
+  </Provider>
+);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

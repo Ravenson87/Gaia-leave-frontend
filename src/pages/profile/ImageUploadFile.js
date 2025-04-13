@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {Upload, X} from 'lucide-react';
+import {User, X} from 'lucide-react';
 
 const ImageUploadField = ({ onImageChange, data }) => {
   const [previewImage, setPreviewImage] = useState(data?.profile_image);
@@ -47,7 +47,8 @@ const ImageUploadField = ({ onImageChange, data }) => {
     }
   };
 
-  const handleRemoveImage = () => {
+  const handleRemoveImage = (e) => {
+    e.stopPropagation();
     setPreviewImage(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -63,44 +64,95 @@ const ImageUploadField = ({ onImageChange, data }) => {
     }
   };
 
+  const getInitials = () => {
+    if (!data) return '';
+
+    const firstInitial = data.first_name ? data.first_name.charAt(0).toUpperCase() : '';
+    const lastInitial = data.last_name ? data.last_name.charAt(0).toUpperCase() : '';
+
+    return firstInitial + lastInitial;
+  };
+
+
+  const getInitialsBackgroundColor = () => {
+    const initials = getInitials();
+    if (!initials) return '#0d6efd';
+
+    let hash = 0;
+    for (let i = 0; i < initials.length; i++) {
+      hash = initials.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const h = Math.abs(hash % 360);
+    return `hsl(${h}, 70%, 50%)`;
+  };
+
   return (
     <div className="mb-4">
-      <label className="form-label">Profile photo</label>
       <div
-        className={`border rounded-4 p-4 text-center position-relative ${isDragging ? 'border-primary' : ''}`}
+        className={`border shadow-sm rounded-3 p-3 text-center position-relative ${
+          isDragging ? 'border-primary border-2' : ''
+        }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         style={{
-          minHeight: '200px',
           background: previewImage ? 'transparent' : '#f8f9fa',
           transition: 'all 0.2s ease',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}
         onClick={!previewImage ? openFileSelector : undefined}
       >
-        {!!previewImage ? (
-          <div className="position-relative">
+        {previewImage ? (
+          <div className="position-relative w-100">
             <img
-              src={data?.profile_image}
-              alt="Preview"
+              src={previewImage}
+              alt="Profile"
               className="img-fluid rounded-3 mx-auto"
-              style={{ maxHeight: '300px' }}
+              style={{maxHeight: '250px', objectFit: 'cover'}}
             />
             <button
-              className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-1 m-2"
+              className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle p-0 m-1"
               onClick={handleRemoveImage}
               type="button"
+              style={{width: '24px', height: '24px'}}
             >
-              <X size={16} />
+              <X size={14}/>
             </button>
+          </div>
+        ) : getInitials() ? (
+          <div className="py-4">
+            <div
+              className="rounded-circle d-flex align-items-center justify-content-center mb-3 mx-auto"
+              style={{
+                width: '120px',
+                height: '120px',
+                backgroundColor: getInitialsBackgroundColor(),
+                color: 'white',
+                fontSize: '2.5rem',
+                fontWeight: 'bold'
+              }}
+            >
+              {getInitials()}
+            </div>
+            <h6 className="mb-2">Upload Profile Photo</h6>
+            <p className="text-muted small mb-0">Drag & drop or click to browse</p>
+            <p className="text-muted small">JPG, PNG, GIF (max 5MB)</p>
           </div>
         ) : (
           <div className="py-4">
-            <Upload size={48} className="text-secondary mb-3" />
-            <h5>Click or drag the image here</h5>
-            <p className="text-muted mb-0">Supported formats: JPG, PNG, GIF</p>
-            <p className="text-muted small">Maximum size: 5MB</p>
+            <div className="bg-light rounded-circle p-4 d-inline-flex shadow-sm mb-3 mx-auto"
+                 style={{ width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <User size={45} className="text-secondary" />
+            </div>
+            <h6 className="mb-2">Upload Profile Photo</h6>
+            <p className="text-muted small mb-0">Drag & drop or click to browse</p>
+            <p className="text-muted small">JPG, PNG, GIF (max 5MB)</p>
           </div>
         )}
 

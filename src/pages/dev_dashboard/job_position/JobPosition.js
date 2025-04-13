@@ -107,7 +107,6 @@ const JobPosition = () => {
 
   const handleAdvancedSearchChange = (e) => {
     const {name, value} = e.target;
-    console.log(name, value, 'name, value ')
     setAdvancedSearch(prev => ({
       ...prev,
       [name]: value

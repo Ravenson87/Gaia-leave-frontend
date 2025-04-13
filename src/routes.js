@@ -9,6 +9,9 @@ const MenuRole = React.lazy(() => import("./pages/dev_dashboard/assigned_accessi
 const DaysOffManagement = React.lazy(() => import("./pages/days-off-management/DaysOffManagement"));
 const Calendar = React.lazy(() => import("./pages/days-off-management/Calendar"));
 const Profile = React.lazy(() => import("./pages/profile/profile"));
+const DaysOffManagementDemo = React.lazy(() => import("./pages/days-off-management/DaysOffManagementDemo"));
+const Prof = React.lazy(() => import("./pages/days-off-management/ProfileDaysOff"));
+const DaysOffBooking = React.lazy(() => import("./pages/days-off-management/DaysOffBooking"));
 
 const routes = [
   {path: '/home', exact: true, name: 'Home', element: Home},
@@ -17,8 +20,10 @@ const routes = [
   {path: '/job-position', exact: true, name: 'Job Position', element: JobPosition},
   {path: '/user', exact: true, name: 'User', element: User},
   {path: '/menu/role', name: 'Menu Role', element: MenuRole},
-  {path: 'days-off-management', name: 'Days off management', element: DaysOffManagement},
+  {path: 'days-off-management', name: 'Days off management', element: DaysOffManagementDemo},
   {path: 'calendar', name: 'Calendar', element: Calendar},
-  {path: '/profile', name: 'Profile', element: Profile}
+  {path: '/profile', name: 'Profile', element: Profile},
+  {path: '/Prof', name: 'Prof', element: Prof},
+  {path: '/days-off-booking', name: 'Days Off Booking', element: DaysOffBooking},
 ]
 export default routes;

@@ -13,7 +13,6 @@ const SetWorkingParameters = ({setModalOpen, get, data}) => {
   const [totalWorkingHours, setTotalWorkingHours] = useState(data?.userTotalAttendance?.total_working_hours || 0);
   const [originalFreeDays, setOriginalFreeDays] = useState(0);
   const [originalWorkingHours, setOriginalWorkingHours] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const incrementFreeDays = () => {

@@ -1,7 +1,7 @@
 import axios from "axios"
 import Cookies from "universal-cookie";
 
-const api = "https://admin-troter.softmetrixgroup.com:8443/gaia_leave";
+const api = process.env.REACT_APP_ENV_API
 const cookies = new Cookies();
 const token = cookies.get('token')
 
@@ -48,7 +48,7 @@ export const workingHoursAssign = async (user_id, working_hours, as_free_days) =
     formData.append("user_id", user_id);
     formData.append("working_hours", working_hours);
     formData.append("as_free_days", as_free_days);
-    return await axios.post(`${api}/api/v1/working-hours/update`, formData, {
+    return await axios.y(`${api}/api/v1/working-hours/update`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -66,7 +66,34 @@ export const createOvertimeHours = async (json) => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
+  }
+};
+
+export const updateOvertimeCompensationForOvertimeHours = async (json) => {
+  try {
+    return await axios.put(`${api}/api/v1/overtime-hours/update-overtime-compensation`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return error
+  }
+};
+
+export const deleteOvertimeHours = async (id) => {
+  try {
+    return await axios.delete(`${api}/api/v1/overtime-hours/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        id: id
+      }
+    });
+  } catch (error) {
+    return error
   }
 };
 
@@ -78,13 +105,13 @@ export const createUserUsedFreeDays = async (json) => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
   }
 };
 
 export const deleteUserUsedFreeDaysByIds = async (ids) => {
   try {
-    return await axios.delete(`${api}/api/v1/user-used-free-days/delete-by-ids`,{
+    return await axios.delete(`${api}/api/v1/user-used-free-days/delete-by-ids`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -94,6 +121,20 @@ export const deleteUserUsedFreeDaysByIds = async (ids) => {
     });
   } catch (error) {
     console.log(error)
+  }
+};
+export const deleteUserUsedFreeDaysById = async (id) => {
+  try {
+    return await axios.delete(`${api}/api/v1/user-used-free-days/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        id: id
+      }
+    });
+  } catch (error) {
+    return error
   }
 };
 
@@ -134,5 +175,65 @@ export const updateCalendarByType = async (id, type) => {
     );
   } catch (error) {
     console.error('error: ', error);
+  }
+};
+
+export const freeDaysRequest = async (user_id, json) => {
+  try {
+    return await axios.post(`${api}/api/v1/free-days-booking/request/${user_id}`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return error;
+  }
+};
+
+export const freeDaysAcceptance = async (json) => {
+  try {
+    return await axios.post(`${api}/api/v1/free-days-booking/acceptance`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const readByDateAndStatus = async (start_date, end_date, status) => {
+  try {
+    return await axios.get(`${api}/api/v1/free-days-booking/read-by-date-range-and-status?start_date=${start_date}&end_date=${end_date}&status=${status}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const freeDaysBookingRead = async () => {
+  try {
+    return await axios.get(`${api}/api/v1/free-days-booking/read`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+export const freeDaysBookingReadByUserId = async (user_id) => {
+  try {
+    return await axios.get(`${api}/api/v1/free-days-booking/read-by-user-id?user_id=${user_id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return error
   }
 };

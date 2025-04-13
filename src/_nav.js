@@ -8,7 +8,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Dashboard',
     to: '/dashboard',
-    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon"/>,
     items: [
       {
         component: CNavItem,
@@ -41,7 +41,7 @@ const _nav = [
     component: CNavGroup,
     name: 'Schedule',
     to: '/calendar',
-    icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilCalendar} customClassName="nav-icon"/>,
     items: [
       {
         component: CNavItem,
@@ -52,7 +52,12 @@ const _nav = [
         component: CNavItem,
         name: 'Team Calendar',
         to: '/calendar',
-      }
+      },
+      {
+        component: CNavItem,
+        name: 'Days Off Booking',
+        to: '/days-off-booking',
+      },
     ],
   }
 

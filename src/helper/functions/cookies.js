@@ -8,9 +8,13 @@ import {getUserById} from "../../api/user";
 let tokenDate = new Date();
 const cookies = new Cookies();
 
-export async function tokenData(user, password, dispatch) {
+export async function tokenData(user, password, dispatch, setPasswordFeedback) {
   const response = await loginAPI(user, password);
   if (response.status === 200) {
+    setPasswordFeedback({
+      type: '',
+      message: ''
+    })
     const tokenData = response.data;
     const jwtDecodeToken = jwtDecode(tokenData.token);
     tokenDate.setTime(jwtDecodeToken.exp * 1000);
@@ -27,14 +31,18 @@ export async function tokenData(user, password, dispatch) {
     setTimer(expTime, refreshTokenParam);
     dispatch(loginUser(jwtDecodeToken));
 
-   if (jwtDecodeToken?.id !== 1) {
-     const userData = await getUserById(jwtDecodeToken?.id)
-     if (userData?.status !== 400) {
-       dispatch(setUser(userData.data));
-     }
-   }
+    if (jwtDecodeToken?.id !== 1) {
+      const userData = await getUserById(jwtDecodeToken?.id)
+      if (userData?.status !== 400) {
+        dispatch(setUser(userData.data));
+        return true;
+      } else {
+        return false
+      }
+    }
     return true
   } else {
+    setPasswordFeedback({type: 'danger', message: response?.response.data.message});
     cookies.remove("token");
     cookies.remove("refresh_token");
     await redirectToLogin();
@@ -92,7 +100,6 @@ async function getRefreshToken(refreshTokenParam) {
 export async function logoutUser() {
   cookies.remove("token");
   cookies.remove("refreshToken");
-  console.log(123456789789999)
   await redirectToLogin();
   return false;
 }

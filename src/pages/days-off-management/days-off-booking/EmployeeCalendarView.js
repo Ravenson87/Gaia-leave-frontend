@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from 'react';
-import {getCalendar, updateCalendarByType} from "../../api/day-off-management/dayOffManagement";
 import {
   Alert,
+  Avatar,
+  Badge,
   Box,
   Button,
   Chip,
@@ -10,55 +11,54 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   Snackbar,
-  TextField,
-  Tooltip,
   Typography
 } from "@mui/material";
-import {ArrowBack, ArrowForward, Close, Event, Save} from '@mui/icons-material';
+import {ArrowBack, ArrowForward, Close, Person} from '@mui/icons-material';
+import {CButton} from "@coreui/react";
 
-const YearlyAvailabilityCalendar = ({year = 2025}) => {
+const EmployeeCalendarView = ({year = new Date().getFullYear(), initialData = [], close}) => {
   const [currentYear, setCurrentYear] = useState(year);
-  const [calendar, setCalendar] = useState([]);
-  const [selectedDates, setSelectedDates] = useState([]);
-  const [selectedType, setSelectedType] = useState(null);
+  const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(false);
-  const [description, setDescription] = useState("");
   const [open, setOpen] = useState(false);
-  const [dateInfo, setDateInfo] = useState(null);
+  const [dayUsers, setDayUsers] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [notification, setNotification] = useState({open: false, message: "", severity: "success"});
-
-  const dayTypes = [
-    {id: 1, name: 'NATIONAL_HOLIDAY', label: 'National Holiday', color: '#FF9800'},
-    {id: 2, name: 'RELIGIOUS_HOLIDAY', label: 'Religious Holiday', color: '#9C27B0'},
-    {id: 3, name: 'WORKING_DAY', label: 'Working Day', color: '#4CAF50'},
-    {id: 4, name: 'WEEKEND_DAY', label: 'Weekend', color: '#BDBDBD'},
-  ];
 
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  useEffect(() => {
-    fetchCalendarData();
-  }, [currentYear]);
 
-  const fetchCalendarData = () => {
-    setLoading(true);
-    getCalendar()
-      .then(response => {
-        if (response.status === 200) {
-          setCalendar(response.data);
-        }
-      })
-      .catch(error => {
-        showNotification("Error", "error");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
+  // Process data when component mounts or initialData changes
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      setData(initialData);
+    }
+  }, [initialData]);
+
+  // Group data by date for efficient lookup
+  const groupedByDate = data.reduce((acc, item) => {
+    if (item && item.calendar && item.calendar.date) {
+      const date = item.calendar.date;
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(item);
+    }
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    setLoading(false);
+  }, [currentYear]);
 
   const showNotification = (message, severity = "success") => {
     setNotification({open: true, message, severity});
@@ -70,12 +70,10 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
 
   const previousYear = () => {
     setCurrentYear(currentYear - 1);
-    setSelectedDates([]);
   };
 
   const nextYear = () => {
     setCurrentYear(currentYear + 1);
-    setSelectedDates([]);
   };
 
   const getDaysInMonth = (month, year) => {
@@ -106,111 +104,66 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
     return `${year}-${formattedMonth}-${formattedDay}`;
   };
 
-  const getDateInfo = (day, month) => {
-    const dateString = formatDateString(currentYear, month, day);
-    return calendar.find(item => item.date === dateString);
+  const getUsersForDate = (dateString) => {
+    return groupedByDate[dateString] || [];
   };
 
-  const getDayTypeName = (typeName) => {
-    const type = dayTypes.find(t => t.name === typeName);
-    return type ? type.label : "N/A";
-  };
-
-  const getDayTypeColor = (typeName) => {
-    const type = dayTypes.find(t => t.name === typeName);
-    return type ? type.color : "#E0E0E0";
+  const getUniqueUserCount = (dateString) => {
+    const users = getUsersForDate(dateString);
+    const uniqueUserIds = [...new Set(users.map(item => item.user_id))];
+    return uniqueUserIds.length;
   };
 
   const handleDayClick = (day, month) => {
     if (!day) return;
 
     const dateString = formatDateString(currentYear, month, day);
-    const dateInfo = getDateInfo(day, month);
+    const users = getUsersForDate(dateString);
 
-    if (dateInfo) {
-      setDateInfo({
-        ...dateInfo,
-        label: getDayTypeName(dateInfo.type),
-        formattedDate: new Date(dateInfo.date).toLocaleDateString('sr-RS'),
-        day: new Date(dateInfo.date).getDate(),
-        month: months[new Date(dateInfo.date).getMonth()]
-      });
+    if (users.length > 0) {
+      setDayUsers(users);
+      setSelectedDate({day, month, year: currentYear, formattedDate: dateString});
       setOpen(true);
-    } else {
-      const isDateSelected = selectedDates.some(d => d.date === dateString);
-
-      if (isDateSelected) {
-        setSelectedDates(selectedDates.filter(d => d.date !== dateString));
-      } else {
-        setSelectedDates([...selectedDates, {date: dateString, day, month}]);
-      }
     }
   };
 
   const handleDialogClose = () => {
     setOpen(false);
-    setDateInfo(null);
+    setDayUsers([]);
+    setSelectedDate(null);
   };
 
-  const handleDescriptionChange = (event) => {
-    setDescription(event.target.value);
-  };
-
-  const updateDateType = (id, type) => {
-    setLoading(true);
-    updateCalendarByType(id, type, description)
-      .then(() => {
-        showNotification("Successgully updated", "success");
-        handleDialogClose();
-        fetchCalendarData();
-      })
-      .catch(() => {
-        showNotification("Error", "error");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const updateDateTypeWithoutApi = (id, newType) => {
-    setSelectedType({id: id, type: newType})
-    setCalendar(prevCalendar =>
-      prevCalendar.map(day =>
-        day.id === id ? {...day, type: newType} : day
-      )
-    );
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 0:
+        return {label: 'In progress', color: '#FFC107'};
+      case 1:
+        return {label: 'Approved', color: '#4CAF50'};
+      case 2:
+        return {label: 'Rejected', color: '#F44336'};
+      default:
+        return {label: 'Unknown', color: '#9E9E9E'};
+    }
   };
 
   const renderCalendarDay = (day, month) => {
     if (!day) return <div className="calendar-cell empty"></div>;
 
     const dateString = formatDateString(currentYear, month, day);
-    const dateInfo = getDateInfo(day, month);
-    const isSelected = selectedDates.some(d => d.date === dateString);
+    const userCount = getUniqueUserCount(dateString);
 
-    let classes = "calendar-cell";
-    let dayColor = "#000";
     let bgColor = "#fff";
     let borderColor = "#ddd";
+    let dayColor = "#000";
 
     if (isToday(day, month)) {
       bgColor = "#BBDEFB";
       borderColor = "#2196F3";
     }
 
-    if (isWeekend(day, month) && !dateInfo) {
+    if (isWeekend(day, month)) {
       dayColor = "#9E9E9E";
       bgColor = "#F5F5F5";
-    }
-
-    if (dateInfo) {
-      bgColor = getDayTypeColor(dateInfo.type);
-      dayColor = "#fff";
-    }
-
-    if (isSelected) {
-      borderColor = "#2196F3";
-      bgColor = "#E3F2FD";
     }
 
     const style = {
@@ -221,15 +174,17 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
 
     return (
       <div
-        className={`calendar-cell ${isSelected ? 'selected' : ''}`}
+        className={`calendar-cell ${userCount > 0 ? 'has-users' : ''}`}
         style={style}
         onClick={() => handleDayClick(day, month)}
       >
-        <span>{day}</span>
-        {dateInfo && (
-          <Tooltip title={getDayTypeName(dateInfo.type)}>
-            <div className="day-marker"></div>
-          </Tooltip>
+        <span className="day-number">{day}</span>
+        {userCount > 0 && (
+          <Badge
+            badgeContent={userCount}
+            color="primary"
+            className="user-badge"
+          />
         )}
       </div>
     );
@@ -294,8 +249,18 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
     );
   };
 
+  const getUniqueUsers = (users) => {
+    const uniqueUsers = {};
+    users.forEach(item => {
+      if (!uniqueUsers[item.user_id]) {
+        uniqueUsers[item.user_id] = item;
+      }
+    });
+    return Object.values(uniqueUsers);
+  };
+
   return (
-    <div className="yearly-calendar-container">
+    <div className="employee-calendar-container">
       {loading && (
         <div className="loading-overlay">
           <CircularProgress/>
@@ -303,21 +268,20 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
       )}
 
       <div className="calendar-header">
-        <Typography variant="h4" component="h1">
-          Calendar {currentYear}
-        </Typography>
-
         <div className="year-navigation">
-          <IconButton onClick={previousYear} color="primary" aria-label="Prethodna godina">
+          <IconButton onClick={previousYear} color="primary" aria-label="Previous year">
             <ArrowBack/>
           </IconButton>
           <Typography variant="h5" component="span">
             {currentYear}
           </Typography>
-          <IconButton onClick={nextYear} color="primary" aria-label="Sledeća godina">
+          <IconButton onClick={nextYear} color="primary" aria-label="Next year">
             <ArrowForward/>
           </IconButton>
         </div>
+        <CButton color="secondary" onClick={() => close(false)}>
+          Close
+        </CButton>
       </div>
 
       <div className="months-grid">
@@ -328,119 +292,85 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
         ))}
       </div>
 
-      <div className="calendar-legend">
-        <Typography variant="subtitle1" sx={{mb: 1}}>
-          Legend:
-        </Typography>
-        <div className="legend-items">
-          {dayTypes.map((type) => (
-            <div key={type.id} className="legend-item">
-              <Box sx={{width: 16, height: 16, borderRadius: '50%', backgroundColor: type.color}}/>
-              <Typography variant="body2">{type.label}</Typography>
-            </div>
-          ))}
-          <div className="legend-item">
-            <Box sx={{width: 16, height: 16, borderRadius: '50%', backgroundColor: '#BBDEFB'}}/>
-            <Typography variant="body2">Today</Typography>
-          </div>
-          <div className="legend-item">
-            <Box sx={{
-              width: 16,
-              height: 16,
-              borderRadius: '50%',
-              backgroundColor: '#E3F2FD',
-              border: '2px solid #2196F3'
-            }}/>
-            <Typography variant="body2">Choosen day</Typography>
-          </div>
-        </div>
-      </div>
-
       <Dialog open={open} onClose={handleDialogClose} maxWidth="sm" fullWidth>
         <DialogTitle>
           <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
             <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
-              <Event color="primary"/>
+              <Person color="primary"/>
               <Typography variant="h6">
-                {dateInfo?.day}. {dateInfo?.month} {currentYear}
+                {selectedDate && `${selectedDate.day} ${months[selectedDate.month]} ${selectedDate.year}`}
               </Typography>
             </Box>
+            <Chip
+              label={`${getUniqueUsers(dayUsers).length} Employee${getUniqueUsers(dayUsers).length !== 1 ? 's' : ''}`}
+              color="primary"
+              size="small"
+            />
             <IconButton onClick={handleDialogClose}>
               <Close/>
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
-          {dateInfo && (
-            <>
-              <Box sx={{mb: 2}}>
-                <Typography variant="subtitle1" sx={{mb: 1}}>
-                  Current status:
-                </Typography>
-                <Chip
-                  label={dateInfo.label}
-                  sx={{
-                    backgroundColor: getDayTypeColor(dateInfo.type),
-                    color: '#fff'
-                  }}
-                />
-              </Box>
-
-              <Typography variant="subtitle1" sx={{mb: 1}}>
-                Change day type:
-              </Typography>
-              <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
-                {dayTypes.map((type) => (
-                  <Chip
-                    key={type.id}
-                    label={type.label}
-                    onClick={() => updateDateTypeWithoutApi(dateInfo.id, type.name)}
-                    sx={{
-                      backgroundColor: selectedType?.id === dateInfo?.id && selectedType?.type === type?.name
-                        ? type.color
-                        : selectedType ? 'transparent' : (type.name === dateInfo.type ? type.color : 'transparent'),
-                      color: selectedType?.id === dateInfo?.id && selectedType?.type === type?.name
-                        ? '#fff'
-                        : (selectedType ? 'inherit' : (type.name === dateInfo.type ? '#fff' : 'inherit')),
-                      border: selectedType?.id === dateInfo?.id && selectedType?.type === type?.name
-                        ? `1px solid ${type.color}`
-                        : (selectedType ? 'none' : (type.name !== dateInfo.type ? `1px solid ${type.color}` : 'none'))
-                    }}
+          <List>
+            {getUniqueUsers(dayUsers).map((item, index) => (
+              <React.Fragment key={`user-${item.user_id}`}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Avatar
+                      src={item.user.profile_image}
+                      alt={`${item.user.first_name} ${item.user.last_name}`}
+                    >
+                      {item.user.first_name[0]}{item.user.last_name[0]}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <Typography variant="subtitle1">
+                          {item.user.first_name} {item.user.last_name}
+                        </Typography>
+                        <Chip
+                          label={getStatusLabel(item.status).label}
+                          size="small"
+                          sx={{
+                            backgroundColor: getStatusLabel(item.status).color,
+                            color: '#fff'
+                          }}
+                        />
+                      </Box>
+                    }
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
+                          {`Job position: ${item.user.job_position_id}`}
+                        </Typography>
+                        {item.user.role && (
+                          <Typography component="p" variant="body2">
+                            Role: {item.user.role.name}
+                          </Typography>
+                        )}
+                        {item.description && (
+                          <Typography component="p" variant="body2">
+                            Description: {item.description}
+                          </Typography>
+                        )}
+                      </>
+                    }
                   />
-                ))}
-              </Box>
-
-              <TextField
-                label="Description"
-                multiline
-                rows={3}
-                value={description}
-                onChange={handleDescriptionChange}
-                fullWidth
-                sx={{mt: 3}}
-              />
-            </>
-          )}
+                </ListItem>
+                {index < getUniqueUsers(dayUsers).length - 1 && <Divider variant="inset" component="li"/>}
+              </React.Fragment>
+            ))}
+          </List>
         </DialogContent>
-        <DialogActions sx={{padding: '16px 24px', gap: '12px', justifyContent: 'flex-end'}}>
-          <Button
-            onClick={handleDialogClose}
-            variant="outlined"
-            color="inherit"
-            startIcon={<Close/>}
-          >
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
             Close
-          </Button>
-          <Button
-            onClick={() => {
-              updateDateType(dateInfo.id, selectedType.type || dateInfo.type);
-              handleDialogClose();
-            }}
-            variant="contained"
-            color="primary"
-            startIcon={<Save/>}
-          >
-            Save
           </Button>
         </DialogActions>
       </Dialog>
@@ -457,7 +387,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
       </Snackbar>
 
       <style jsx>{`
-        .yearly-calendar-container {
+        .employee-calendar-container {
           position: relative;
           padding: 24px;
           max-width: 1200px;
@@ -490,13 +420,6 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
           display: flex;
           align-items: center;
           gap: 16px;
-        }
-
-        .control-panel {
-          background-color: #f5f5f5;
-          border-radius: 8px;
-          padding: 16px;
-          margin-bottom: 24px;
         }
 
         .months-grid {
@@ -562,36 +485,22 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
           cursor: default;
         }
 
-        .calendar-cell.selected {
-          border: 2px solid #2196F3;
+        .calendar-cell.has-users {
+          font-weight: bold;
         }
 
-        .day-marker {
+        .day-number {
           position: absolute;
-          bottom: 2px;
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background-color: rgba(0, 0, 0, 0.3);
+          top: 5px;
+          left: 5px;
+          font-size: 0.8rem;
         }
 
-        .calendar-legend {
-          margin-top: 32px;
-          background-color: #f5f5f5;
-          border-radius: 8px;
-          padding: 16px;
-        }
-
-        .legend-items {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        .legend-item {
-          display: flex;
-          align-items: center;
-          gap: 6px;
+        .user-badge {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
 
         @media (max-width: 768px) {
@@ -608,5 +517,4 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
     </div>
   );
 };
-
-export default YearlyAvailabilityCalendar;
+export default EmployeeCalendarView

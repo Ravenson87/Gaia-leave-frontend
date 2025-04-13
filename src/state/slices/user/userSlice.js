@@ -3,6 +3,9 @@ import {createSlice} from '@reduxjs/toolkit'
 const initialState = {
   currentUser: null,
   validationMessage: null,
+  profileData: null,
+  courier: [],
+  client: [],
   user: null
 }
 
@@ -13,11 +16,17 @@ const userSlice = createSlice({
     loginUser: (state, action) => {
       state.currentUser = action.payload
     },
-    setUser: (state, action) => {
-      state.user = action.payload
-    },
     logoutUser: (state, action) => {
       state.currentUser = action.payload
+    },
+    setValidationMessage: (state, action) => {
+      state.validationMessage = action.payload
+    },
+    setProfileData: (state, action) => {
+      state.profileData = action.payload
+    },
+    setUser: (state, action) => {
+      state.user = action.payload
     }
   },
 })
@@ -25,7 +34,8 @@ const userSlice = createSlice({
 export const {
   loginUser,
   logoutUser,
-  setUser
+  setValidationMessage,
+  setUser,
 } = userSlice.actions;
 
 export default userSlice.reducer

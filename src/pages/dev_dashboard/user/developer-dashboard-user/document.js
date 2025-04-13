@@ -3,7 +3,6 @@ import {documentUpload} from "../../../../api/user";
 
 const DocumentList = ({data, setDocumentVisible}) => {
   const [documents, setDocuments] = useState([]);
-  console.log(data.userDocuments)
   const [searchTerm, setSearchTerm] = useState('');
   const fileInputRef = useRef(null);
 

@@ -5,7 +5,7 @@ import userReducer from "../state/slices/user/userSlice";
 import sidebarReducer from "../state/slices/sidebar/sidebarSlice";
 
 const persistConfig = {
-  key: "gaia_leave",
+  key: "troter",
   version: 1.1,
   storage,
   blacklist: ["product"],
@@ -13,7 +13,7 @@ const persistConfig = {
 
 export const rootReducer = combineReducers({
   currentUser: userReducer,
-  sidebar: sidebarReducer
+  sidebar: sidebarReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

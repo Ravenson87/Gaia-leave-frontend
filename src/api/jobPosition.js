@@ -1,7 +1,7 @@
 import axios from "axios"
 import Cookies from "universal-cookie";
 
-const api = "https://admin-troter.softmetrixgroup.com:8443/gaia_leave";
+const api = process.env.REACT_APP_ENV_API
 const cookies = new Cookies();
 const token = cookies.get('token')
 

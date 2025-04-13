@@ -1,20 +1,24 @@
 import React from 'react'
 import {CAvatar, CDropdown, CDropdownToggle,} from '@coreui/react'
-
-import avatar8 from './../../assets/images/avatars/8.jpg'
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
 
 const AppHeaderDropdown = () => {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user);
-  console.log(user, "user")
+  const user = useSelector((state) => state.currentUser.user);
 
   return (
-    <CDropdown variant="nav-item" onClick={() =>  navigate('/profile')}>
-      <CDropdownToggle placement="bottom-end" className="py-0" caret={false} onClick={() =>  navigate('/profile')}>
-        {user ?  <CAvatar src={avatar8} size="md" /> : initialsAvatar()}
-      </CDropdownToggle>
+    <CDropdown variant="nav-item" onClick={() => navigate('/profile')}>
+      <CDropdownToggle placement="bottom-end" className="py-0" caret={false} onClick={() => navigate('/profile')}>
+        {
+          user.profile_image && user.profile_image.startsWith('http')
+            ? <CAvatar src={user.profile_image} size="md" />
+            : initialsAvatar(
+              user?.first_name && user.last_name
+                ? user.first_name.charAt(0).toUpperCase() + user.last_name.charAt(0).toUpperCase()
+                : ''
+            )
+        }      </CDropdownToggle>
     </CDropdown>
   )
 }

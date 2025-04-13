@@ -65,8 +65,7 @@ const RegistrationForm = () => {
     if (params) {
       checkUserForVerification(params).then((res) => {
         if (res.status === 200) {
-          console.log("res.data", res.data)
-          setShow(!res.data);
+          setShow(res.data);
         } else {
           setShow(false);
         }

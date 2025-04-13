@@ -1,21 +1,21 @@
 import axios from "axios"
 import Cookies from "universal-cookie";
 
-const api = "https://admin-troter.softmetrixgroup.com:8443/gaia_leave";
+const api = process.env.REACT_APP_ENV_API
 const cookies = new Cookies();
 const token = cookies.get('token')
 
 
 export const getUser = async () => {
-    try {
-        return await axios.get(`${api}/api/v1/user/read`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    return await axios.get(`${api}/api/v1/user/read`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 export const getUserById = async (id) => {
@@ -49,57 +49,71 @@ export const checkUserForVerification = async (hash) => {
 };
 
 export const createUser = async (json) => {
-    try {
-        return await axios.post(`${api}/api/v1/user/create`, json, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    return await axios.post(`${api}/api/v1/user/create`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 export const documentUpload = async (user_id, file) => {
-    try {
-      const formData = new FormData();
-      formData.append("user_id", user_id);
-      formData.append("file", file);
-        return await axios.post(`${api}/api/v1/user-documents/create`, formData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    const formData = new FormData();
+    formData.append("user_id", user_id);
+    formData.append("file", file);
+    return await axios.post(`${api}/api/v1/user-documents/create`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+   return error;
+  }
 };
+
+export const documentDelete = async (id) => {
+  try {
+
+    return await axios.delete(`${api}/api/v1/user-documents/delete?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+  } catch (error) {
+    return error;
+  }
+};
+
 
 export const createUserUsedFreeType = async (json) => {
-    try {
-        return await axios.post(`${api}/api/v1/user-used-free-days/create`, json, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-    }
+  try {
+    return await axios.post(`${api}/api/v1/user-used-free-days/create`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
 };
 
-export const createUserTotalAttendance= async (json) => {
-    try {
-        return await axios.post(`${api}/api/v1/user-total-attendance/create`, json, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.log(error)
-    }
+export const createUserTotalAttendance = async (json) => {
+  try {
+    return await axios.post(`${api}/api/v1/user-total-attendance/create`, json, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    return error
+  }
 };
 
-export const updateUserTotalAttendance= async (json, id) => {
+export const updateUserTotalAttendance = async (json, id) => {
   try {
     return await axios.put(`${api}/api/v1/user-total-attendance/update/${id}`, json, {
       headers: {
@@ -107,7 +121,7 @@ export const updateUserTotalAttendance= async (json, id) => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error;
   }
 };
 
@@ -142,7 +156,7 @@ export const updateUploadProfileImage = async (file, user_id) => {
   }
 };
 
-export const updateUserPassword= async (id, old_password, new_password) => {
+export const updateUserPassword = async (id, old_password, new_password) => {
   try {
     const json = {
       old_password: old_password,
@@ -158,38 +172,52 @@ export const updateUserPassword= async (id, old_password, new_password) => {
   }
 };
 
+export const updateUserStatus = async (id, status) => {
+  try {
+    const formData = new FormData();
+    formData.append("id", id);
+    formData.append("status", status);
+    return await axios.put(`${api}/api/v1/user/update-status/${id}`, formData,{
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.log(error)
+  }
+};
+
 /**
  *
  * @param id
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
 export const deleteUser = async (id) => {
-    try {
-        return await axios.delete(`${api}/api/v1/user/delete`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            params: {
-                id: id
-            }
-        });
-    } catch (error) {
-        console.error('error: ', error)
-    }
+  try {
+    return await axios.delete(`${api}/api/v1/user/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        id: id
+      }
+    });
+  } catch (error) {
+    console.error('error: ', error)
+  }
 }
 /**
- * @param id
  * @param formData
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const updateUser = async (id, formData) => {
-    try {
-        return await axios.put(`${api}/api/v1/user/update/${id}`, formData, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-    } catch (error) {
-        console.error('error: ', error)
-    }
+export const updateUser = async (formData) => {
+  try {
+    return await axios.put(`${api}/api/v1/user/update`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+    console.error('error: ', error)
+  }
 }

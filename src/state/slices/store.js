@@ -2,7 +2,8 @@ import {createStore} from 'redux';
 
 const initialState = {
   sidebarShow: true,
-  currentUser: null
+  currentUser: null,
+  validationMessage: null
 }
 
 const rootReducer = (state = initialState, { type, ...rest }) => {
@@ -14,5 +15,5 @@ const rootReducer = (state = initialState, { type, ...rest }) => {
   }
 }
 
-const persistTroterStore = createStore(rootReducer);
-export default persistTroterStore;
+const persistStore = createStore(rootReducer);
+export default persistStore;

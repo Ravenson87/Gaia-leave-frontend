@@ -1,14 +1,14 @@
 import axios from "axios"
 import Cookies from "universal-cookie";
 
-const api = "https://admin-troter.softmetrixgroup.com:8443/gaia_leave";
+const api = process.env.REACT_APP_ENV_API
 const cookies = new Cookies();
 const token = cookies.get('token')
 
 
 export const getMenuRole = async () => {
     try {
-        return await axios.get(`${api}/api/v1/menu_role/read`, {
+        return await axios.get(`${api}/api/v1/role-menu/read`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -32,7 +32,7 @@ export const getEndpoint = async () => {
 
 export const createMenuRole = async (json) => {
     try {
-        return await axios.post(`${api}/api/v1/menu_role/create`, json, {
+        return await axios.post(`${api}/api/v1/role-menu/create`, json, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -80,7 +80,7 @@ export const deleteMenuRole = async (id) => {
  */
 export const updateMenuRole = async (id, json) => {
     try {
-        return await axios.put(`${api}/api/v1/menu_role/update/${id}`, json, {
+        return await axios.put(`${api}/api/v1/role-menu/update/${id}`, json, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

@@ -53,8 +53,8 @@ const AppSidebar = () => {
     if (jwtDecodeToken.role === "super_admin") {
       setNav(navigation)
     } else {
-      getUserById(2).then((data) => {
-        const filteredNav = filterNavItems(navigation, data.role.roleMenus);
+      getUserById(jwtDecodeToken.id).then((data) => {
+        const filteredNav = filterNavItems(navigation, data?.role?.roleMenus || []);
         setNav(filteredNav)
       })
     }

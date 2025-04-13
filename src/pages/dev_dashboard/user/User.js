@@ -23,8 +23,6 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import AssignmentIcon from "@mui/icons-material/Assignment";
 import {deleteUser, getUser} from "../../../api/user";
 import CreateUser from "../user/developer-dashboard-user/create";
 import AlertDialog from "../../../components/Modal";
@@ -62,6 +60,10 @@ const User = () => {
     filterUsers();
   }, [users, advancedSearch]);
 
+  useEffect(() => {
+    fetchUsers()
+  }, [editModal]);
+
   const filterUsers = () => {
     let filtered = [...users];
 
@@ -90,11 +92,9 @@ const User = () => {
       const filter = jobPositions?.find(job =>
         job.title.toLowerCase().includes(advancedSearch.job_position.toLowerCase())
       );
-      console.log(filter, "advancedSearch")
       filtered = filtered.filter(user =>
         user.job_position_id === filter.id
       );
-      console.log(filtered, "filteredfiltered")
     }
 
     setFilteredUsers(filtered);
@@ -170,7 +170,7 @@ const User = () => {
     }
     handleAlertDialogClose();
   };
-  console.log("jobPositions", jobPositions);
+
   return (
     <Box sx={{width: "100%"}}>
       {!createModal && !editModal && !documentModal && !attendanceModal && (
@@ -280,22 +280,6 @@ const User = () => {
                                 <Tooltip title="Delete">
                                   <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
                                     <DeleteIcon/>
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Total Attendance">
-                                  <IconButton color="primary" onClick={() => {
-                                    setAttendanceModal(true);
-                                    setSelectedUser(user);
-                                  }}>
-                                    <CalendarTodayIcon/>
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="View Documents">
-                                  <IconButton color="primary" onClick={() => {
-                                    setDocumentModal(true);
-                                    setSelectedUser(user);
-                                  }}>
-                                    <AssignmentIcon/>
                                   </IconButton>
                                 </Tooltip>
                               </Stack>

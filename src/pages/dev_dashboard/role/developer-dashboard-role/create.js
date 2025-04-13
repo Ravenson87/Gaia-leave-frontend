@@ -16,8 +16,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
 import AddIcon from "@mui/icons-material/Add";
 import {createRole} from "../../../../api/role";
+import {createEndpointRole, getEndpoint} from "../../../../api/menuRole";
 
-const CreateRole = ({ setCreateModal, get }) => {
+const CreateRole = ({setCreateModal, get}) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -26,10 +27,10 @@ const CreateRole = ({ setCreateModal, get }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const {name, value} = e.target;
+    setFormData({...formData, [name]: value});
     if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
+      setErrors({...errors, [name]: ""});
     }
   };
 
@@ -52,33 +53,55 @@ const CreateRole = ({ setCreateModal, get }) => {
     try {
       const response = await createRole(formData);
       if (response.status === 201) {
+        getAllEndpoints().then((endpoints) => {
+          attachedRequiredEndpointsToRole(response.data.id, endpoints);
+        });
         get();
         setCreateModal(false);
       }
     } catch (error) {
       console.error("Error creating role:", error);
-      setErrors({ name: "Failed to create role" });
+      setErrors({name: "Failed to create role"});
     } finally {
       setIsLoading(false);
     }
   };
 
+  const getAllEndpoints = () => {
+    return getEndpoint().then((r) => {
+      return r.data.filter((el) => el.controller === "UserController" || "FreeDaysBookingController" || "CalendarController");
+    })
+  }
+
+  const attachedRequiredEndpointsToRole = (id, endpoints) => {
+    let paramArr = endpoints.map((endpoint) => {
+      return {
+        role_id: parseInt(id),
+        endpoint_id: endpoint.id
+      };
+    });
+
+    createEndpointRole(paramArr).then((r) => {
+
+    })
+  }
+
   return (
-    <Card elevation={3} sx={{ borderRadius: 2 }}>
+    <Card elevation={3} sx={{borderRadius: 2}}>
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <AddIcon color="primary" />
+            <AddIcon color="primary"/>
             <Typography variant="h6">Create Role</Typography>
           </Stack>
         }
         action={
           <IconButton onClick={() => setCreateModal(false)} size="small">
-            <CloseIcon />
+            <CloseIcon/>
           </IconButton>
         }
       />
-      <Divider />
+      <Divider/>
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -106,15 +129,15 @@ const CreateRole = ({ setCreateModal, get }) => {
           </Grid>
         </Grid>
       </CardContent>
-      <Divider />
-      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
+      <Divider/>
+      <Box sx={{p: 2, display: "flex", justifyContent: "flex-end"}}>
         <Stack direction="row" spacing={2}>
           <Button variant="outlined" onClick={() => setCreateModal(false)}>
             Cancel
           </Button>
           <Button
             variant="contained"
-            startIcon={<SaveIcon />}
+            startIcon={<SaveIcon/>}
             onClick={handleSubmit}
             disabled={isLoading}
           >

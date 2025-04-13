@@ -4,7 +4,6 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 const ExpiredValidationCodePage = () => {
-
   return (
     <Box
       sx={{
