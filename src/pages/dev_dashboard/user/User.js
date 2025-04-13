@@ -286,14 +286,14 @@ const User = () => {
                                   </IconButton>
                                 </Tooltip>
 
-                                <Tooltip title="Delete">
-                                  <IconButton color="error" onClick={() => {
-                                    setMailVisible(true)
-                                    setUserAddress(user.email)
-                                  }}>
-                                    <DeleteIcon/>
-                                  </IconButton>
-                                </Tooltip>
+                                {/*<Tooltip title="Delete">*/}
+                                {/*  <IconButton color="error" onClick={() => {*/}
+                                {/*    setMailVisible(true)*/}
+                                {/*    setUserAddress(user.email)*/}
+                                {/*  }}>*/}
+                                {/*    <DeleteIcon/>*/}
+                                {/*  </IconButton>*/}
+                                {/*</Tooltip>*/}
                               </Stack>
                             </TableCell>
                           </TableRow>
