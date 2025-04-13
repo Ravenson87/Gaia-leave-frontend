@@ -26,7 +26,7 @@ export const createRole = async (json) => {
             },
         });
     } catch (error) {
-        console.log(error)
+        return error
     }
 };
 
@@ -46,7 +46,7 @@ export const deleteRole = async (id) => {
             }
         });
     } catch (error) {
-        console.error('error: ', error)
+        return error
     }
 }
 /**
@@ -62,6 +62,6 @@ export const updateRole = async (id, json) => {
             },
         });
     } catch (error) {
-        console.error('error: ', error)
+        return error
     }
 }

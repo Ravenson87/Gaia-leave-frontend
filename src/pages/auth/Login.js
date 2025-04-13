@@ -84,6 +84,12 @@ const Login = () => {
     }
   }
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      login();
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -148,6 +154,7 @@ const Login = () => {
               "text",
               error.username,
               handleChangeError,
+              handleKeyDown,
               false
             )}
 
@@ -177,6 +184,7 @@ const Login = () => {
               showPassword ? "text" : "password",
               error.password,
               handleChangeError,
+              handleKeyDown,
               showRequirements,
               requirements,
             )}
@@ -235,6 +243,7 @@ function loginField(
   type,
   errorMessage,
   handleChangeError,
+  handleKeyDown,
   showRequirements,
   requirements
 ) {
@@ -251,6 +260,7 @@ function loginField(
           changeHandler(e.target.value, name);
           handleChangeError(name);
         }}
+        onKeyDown={handleKeyDown}
         InputProps={inputProps}
         sx={{
           '& .MuiOutlinedInput-root': {

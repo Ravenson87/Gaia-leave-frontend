@@ -31,8 +31,8 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
     hours: '',
     status: ''
   });
-  const [freeDaysEntry, setFreeDaysEntry] = useState(parseFloat(userData.userTotalAttendance.total_free_days));
-  const [workingHoursEntry, setWorkingHoursEntry] = useState(parseFloat(userData.userTotalAttendance.total_working_hours));
+  const [freeDaysEntry, setFreeDaysEntry] = useState(parseFloat(userData?.userTotalAttendance?.total_free_days));
+  const [workingHoursEntry, setWorkingHoursEntry] = useState(parseFloat(userData?.userTotalAttendance?.total_working_hours));
   const [user, setUser] = useState(userData);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('')

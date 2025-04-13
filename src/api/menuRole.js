@@ -14,7 +14,7 @@ export const getMenuRole = async () => {
             },
         });
     } catch (error) {
-        console.log(error)
+        return error
     }
 };
 
@@ -26,7 +26,7 @@ export const getEndpoint = async () => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
   }
 };
 
@@ -38,7 +38,7 @@ export const createMenuRole = async (json) => {
             },
         });
     } catch (error) {
-        console.log(error)
+        return error
     }
 };
 
@@ -50,7 +50,7 @@ export const createEndpointRole = async (json) => {
             },
         });
     } catch (error) {
-        console.log(error)
+        return error
     }
 };
 
@@ -70,7 +70,7 @@ export const deleteMenuRole = async (id) => {
             }
         });
     } catch (error) {
-        console.error('error: ', error)
+        return error
     }
 }
 /**
@@ -86,6 +86,6 @@ export const updateMenuRole = async (id, json) => {
             },
         });
     } catch (error) {
-        console.error('error: ', error)
+        return error
     }
 }

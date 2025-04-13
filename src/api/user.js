@@ -30,6 +30,18 @@ export const getUserById = async (id) => {
   }
 };
 
+export const getMailHistoryByAddress= async (addresses) => {
+  try {
+    return await axios.get(`${api}/api/v1/mail-history/read-by-addresses?addresses=${addresses}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+   return []
+  }
+};
+
 /**
  * Check user for verification.
  *
@@ -66,6 +78,22 @@ export const documentUpload = async (user_id, file) => {
     formData.append("user_id", user_id);
     formData.append("file", file);
     return await axios.post(`${api}/api/v1/user-documents/create`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (error) {
+   return error;
+  }
+};
+
+export const createMailByAddress = async (to, subject, body) => {
+  try {
+    const formData = new FormData();
+    formData.append("to", to);
+    formData.append("subject", subject);
+    formData.append("body", body);
+    return await axios.post(`${api}/api/v1/mail/send`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

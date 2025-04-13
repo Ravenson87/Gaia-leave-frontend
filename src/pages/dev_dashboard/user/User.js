@@ -30,6 +30,7 @@ import UpdateUser from "./developer-dashboard-user/update";
 import DocumentList from "./developer-dashboard-user/document";
 import SetWorkingParameters from "./developer-dashboard-user/userTotalAttendance";
 import {getJobPosition} from "../../../api/jobPosition";
+import EmailForwardingInterface from "./developer-dashboard-user/email";
 
 const User = () => {
   const [users, setUsers] = useState([]);
@@ -46,8 +47,10 @@ const User = () => {
   const [createModal, setCreateModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [documentModal, setDocumentModal] = useState(false);
+  const [mailVisible, setMailVisible] = useState(false);
   const [attendanceModal, setAttendanceModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userAddress, setUserAddress] = useState(null);
   const [jobPositions, setJobPositions] = useState([]);
   const [alertDialog, setAlertDialog] = useState({open: false, data: null});
 
@@ -173,7 +176,7 @@ const User = () => {
 
   return (
     <Box sx={{width: "100%"}}>
-      {!createModal && !editModal && !documentModal && !attendanceModal && (
+      {!createModal && !editModal && !documentModal && !attendanceModal && !mailVisible && (
         <Card elevation={3} sx={{borderRadius: 2}}>
           <CardHeader
             title={<Typography variant="h5">User Management</Typography>}
@@ -269,7 +272,7 @@ const User = () => {
                             <TableCell>{user.username}</TableCell>
                             <TableCell>{user.email}</TableCell>
                             <TableCell>{user.role.name || "N/A"}</TableCell>
-                            <TableCell>{jobPositions?.find(job => job.id === user.job_position_id).title || "N/A"}</TableCell>
+                            <TableCell>{jobPositions?.find(job => job.id === user?.job_position_id)?.title || "N/A"}</TableCell>
                             <TableCell>
                               <Stack direction="row" spacing={1}>
                                 <Tooltip title="Edit">
@@ -279,6 +282,15 @@ const User = () => {
                                 </Tooltip>
                                 <Tooltip title="Delete">
                                   <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
+                                    <DeleteIcon/>
+                                  </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title="Delete">
+                                  <IconButton color="error" onClick={() => {
+                                    setMailVisible(true)
+                                    setUserAddress(user.email)
+                                  }}>
                                     <DeleteIcon/>
                                   </IconButton>
                                 </Tooltip>
@@ -313,6 +325,7 @@ const User = () => {
       {editModal && <UpdateUser setUpdateModal={setEditModal} get={fetchUsers} editData={selectedUser}/>}
       {createModal && <CreateUser setCreateModal={setCreateModal} get={fetchUsers}/>}
       {documentModal && <DocumentList data={selectedUser} setDocumentVisible={setDocumentModal}/>}
+      {mailVisible && <EmailForwardingInterface address={userAddress} setMailVisible={setMailVisible}/>}
       {attendanceModal &&
         <SetWorkingParameters setModalOpen={setAttendanceModal} get={fetchUsers} data={selectedUser}/>}
       <AlertDialog open={alertDialog.open} setOpen={handleAlertDialogClose} data={alertDialog.data}

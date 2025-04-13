@@ -13,7 +13,7 @@ const StatisticsCards = ({ user, setShowModal, showModal }) => {
               <i className="bi bi-calendar-check fs-2"></i>
             </div>
             <h5 className="text-center fw-bold mb-3">Total free days</h5>
-            <h2 className="text-center fw-bold mb-0">{user.userTotalAttendance.total_free_days}</h2>
+            <h2 className="text-center fw-bold mb-0">{user?.userTotalAttendance?.total_free_days}</h2>
             <div className="mt-3 text-center">
               <Button
                 variant="outline-primary"
@@ -36,7 +36,7 @@ const StatisticsCards = ({ user, setShowModal, showModal }) => {
               <i className="bi bi-clock-history fs-2"></i>
             </div>
             <h5 className="text-center fw-bold mb-3">Total working hours</h5>
-            <h2 className="text-center fw-bold mb-0">{user.userTotalAttendance.total_working_hours}</h2>
+            <h2 className="text-center fw-bold mb-0">{user?.userTotalAttendance?.total_working_hours}</h2>
             <div className="mt-3 text-center">
               <Button
                 variant="outline-primary"
@@ -59,7 +59,7 @@ const StatisticsCards = ({ user, setShowModal, showModal }) => {
               <i className="bi bi-clock-fill fs-2"></i>
             </div>
             <h5 className="text-center fw-bold mb-3">Overtime hours</h5>
-            <h2 className="text-center fw-bold mb-0">{user.userTotalAttendance.overtime_hours_sum}</h2>
+            <h2 className="text-center fw-bold mb-0">{user?.userTotalAttendance?.overtime_hours_sum}</h2>
             <div className="mt-3 text-center">
             </div>
           </Card.Body>

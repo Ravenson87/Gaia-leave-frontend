@@ -17,7 +17,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
 import {updateMenu} from "../../../../api/menu";
 
-const UpdateMenu = ({ setUpdateModal, get, editData }) => {
+const UpdateMenu = ({setUpdateModal, get, editData}) => {
   const [formData, setFormData] = useState({
     id: "",
     menu_number: null,
@@ -26,6 +26,11 @@ const UpdateMenu = ({ setUpdateModal, get, editData }) => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success"
+  });
 
   useEffect(() => {
     if (editData) {
@@ -39,12 +44,28 @@ const UpdateMenu = ({ setUpdateModal, get, editData }) => {
   }, [editData]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const {name, value} = e.target;
+    setFormData({...formData, [name]: value});
     if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
+      setErrors({...errors, [name]: ""});
     }
   };
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToast({...toast, open: false});
+  };
+
+  const showToast = (message, severity) => {
+    setToast({
+      open: true,
+      message,
+      severity
+    });
+  };
+
 
   const validateForm = () => {
     let valid = true;
@@ -69,90 +90,106 @@ const UpdateMenu = ({ setUpdateModal, get, editData }) => {
     try {
       const response = await updateMenu(formData.id, formData);
       if (response.status === 200) {
+        showToast("Menu successfully updated!", "success");
         get();
         setUpdateModal(false);
+      } else {
+        showToast(response.response?.data?.message || "Failed to update menu. Please try again.", "error");
       }
     } catch (error) {
-      console.error("Error updating menu:", error);
-      setErrors({ name: "Failed to update menu" });
+      showToast(error.response?.data?.message || "Failed to update menu. Please try again.", "error");
+      setErrors({name: "Failed to update menu"});
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card elevation={3} sx={{ borderRadius: 2 }}>
-      <CardHeader
-        title={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <EditIcon color="primary" />
-            <Typography variant="h6">Edit Menu</Typography>
+    <>
+      <Card elevation={3} sx={{borderRadius: 2}}>
+        <CardHeader
+          title={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <EditIcon color="primary"/>
+              <Typography variant="h6">Edit Menu</Typography>
+            </Stack>
+          }
+          action={
+            <IconButton onClick={() => setUpdateModal(false)} size="small">
+              <CloseIcon/>
+            </IconButton>
+          }
+        />
+        <Divider/>
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                name="menu_number"
+                label="Menu Number"
+                type="number"
+                value={formData.menu_number}
+                onChange={handleChange}
+                error={!!errors.menu_number}
+                helperText={errors.menu_number}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                required
+                name="name"
+                label="Name"
+                value={formData.name}
+                onChange={handleChange}
+                error={!!errors.name}
+                helperText={errors.name}
+              />
+            </Grid>
+            <Grid item xs={12} sm={12}>
+              <TextField
+                fullWidth
+                name="description"
+                label="Description"
+                multiline
+                rows={2}
+                value={formData.description}
+                onChange={handleChange}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+        <Divider/>
+        <Box sx={{p: 2, display: "flex", justifyContent: "flex-end"}}>
+          <Stack direction="row" spacing={2}>
+            <Button variant="outlined" onClick={() => setUpdateModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<SaveIcon/>}
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              Save Changes
+            </Button>
           </Stack>
-        }
-        action={
-          <IconButton onClick={() => setUpdateModal(false)} size="small">
-            <CloseIcon />
-          </IconButton>
-        }
-      />
-      <Divider />
-      <CardContent>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              required
-              name="menu_number"
-              label="Menu Number"
-              type="number"
-              value={formData.menu_number}
-              onChange={handleChange}
-              error={!!errors.menu_number}
-              helperText={errors.menu_number}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              required
-              name="name"
-              label="Name"
-              value={formData.name}
-              onChange={handleChange}
-              error={!!errors.name}
-              helperText={errors.name}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <TextField
-              fullWidth
-              name="description"
-              label="Description"
-              multiline
-              rows={2}
-              value={formData.description}
-              onChange={handleChange}
-            />
-          </Grid>
-        </Grid>
-      </CardContent>
-      <Divider />
-      <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end" }}>
-        <Stack direction="row" spacing={2}>
-          <Button variant="outlined" onClick={() => setUpdateModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<SaveIcon />}
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
-            Save Changes
-          </Button>
-        </Stack>
-      </Box>
-    </Card>
+        </Box>
+      </Card>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleCloseToast}
+        anchorOrigin={{vertical: 'top', horizontal: 'right'}}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{width: '100%'}}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

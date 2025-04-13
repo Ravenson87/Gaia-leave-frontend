@@ -24,6 +24,15 @@ import {validateUser} from "../../api/auth";
 import {checkUserForVerification} from "../../api/user";
 import ExpiredValidationCodePage from "./ExpiredValidationCode";
 import {useNavigate} from "react-router-dom";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import Tooltip from '@mui/material/Tooltip';
+import Zoom from '@mui/material/Zoom';
+import Grid from "@mui/material/Grid";
 
 const RegistrationForm = () => {
 
@@ -50,6 +59,14 @@ const RegistrationForm = () => {
     religiousHoliday: ''
   });
 
+  const [requirements, setRequirements] = useState({
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+    length: false
+  });
+
   useEffect(() => {
     get();
   }, []);
@@ -73,6 +90,16 @@ const RegistrationForm = () => {
     }
   }
 
+  const checkPasswordRequirements = (password) => {
+    setRequirements({
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+      length: password.length >= 8
+    });
+  };
+
   function handleChange(event, name) {
     if (name === 'dateOfBirth') {
       setFormData(prevState => ({
@@ -84,6 +111,9 @@ const RegistrationForm = () => {
         ...prevState,
         [name]: event
       }));
+    }
+    if (name === 'password') {
+      checkPasswordRequirements(event);
     }
   }
 
@@ -122,8 +152,14 @@ const RegistrationForm = () => {
     if (!formData.password) {
       newErrors.password = 'Password is required';
       isValid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
+    } else if (
+      !requirements.uppercase ||
+      !requirements.lowercase ||
+      !requirements.number ||
+      !requirements.special ||
+      !requirements.length
+    ) {
+      newErrors.password = 'Password does not meet requirements';
       isValid = false;
     }
 
@@ -170,6 +206,108 @@ const RegistrationForm = () => {
       });
     }
   }
+
+  const PasswordRequirementsTooltip = () => (
+    <Box
+      sx={{
+        p: 2,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 1,
+        border: '1px solid #e9ecef',
+        maxWidth: 250
+      }}
+    >
+      <Typography variant="subtitle1" sx={{mb: 1, fontWeight: 600, color: 'text.secondary' }}>
+        Password must:
+      </Typography>
+      <List dense sx={{p: 0}}>
+        <ListItem sx={{py: 0.5}}>
+          <ListItemIcon sx={{minWidth: '30px'}}>
+            {requirements.uppercase ?
+              <CheckCircleOutlineIcon sx={{color: 'success.main'}}/> :
+              <CancelOutlinedIcon sx={{color: 'error.main'}}/>}
+          </ListItemIcon>
+          <Typography
+            variant="body2"
+            sx={{
+              color: requirements.uppercase ? 'success.main' : 'text.secondary',
+              fontWeight: requirements.uppercase ? 500 : 400
+            }}
+          >
+            Contain an uppercase letter
+          </Typography>
+        </ListItem>
+
+        <ListItem sx={{py: 0.5}}>
+          <ListItemIcon sx={{minWidth: '30px'}}>
+            {requirements.lowercase ?
+              <CheckCircleOutlineIcon sx={{color: 'success.main'}}/> :
+              <CancelOutlinedIcon sx={{color: 'error.main'}}/>}
+          </ListItemIcon>
+          <Typography
+            variant="body2"
+            sx={{
+              color: requirements.lowercase ? 'success.main' : 'text.secondary',
+              fontWeight: requirements.lowercase ? 500 : 400
+            }}
+          >
+            Contain a lowercase letter
+          </Typography>
+        </ListItem>
+
+        <ListItem sx={{py: 0.5}}>
+          <ListItemIcon sx={{minWidth: '30px'}}>
+            {requirements.number ?
+              <CheckCircleOutlineIcon sx={{color: 'success.main'}}/> :
+              <CancelOutlinedIcon sx={{color: 'error.main'}}/>}
+          </ListItemIcon>
+          <Typography
+            variant="body2"
+            sx={{
+              color: requirements.number ? 'success.main' : 'text.secondary',
+              fontWeight: requirements.number ? 500 : 400
+            }}
+          >
+            Contain a number
+          </Typography>
+        </ListItem>
+
+        <ListItem sx={{py: 0.5}}>
+          <ListItemIcon sx={{minWidth: '30px'}}>
+            {requirements.special ?
+              <CheckCircleOutlineIcon sx={{color: 'success.main'}}/> :
+              <CancelOutlinedIcon sx={{color: 'error.main'}}/>}
+          </ListItemIcon>
+          <Typography
+            variant="body2"
+            sx={{
+              color: requirements.special ? 'success.main' : 'text.secondary',
+              fontWeight: requirements.special ? 500 : 400
+            }}
+          >
+            Contain a special character
+          </Typography>
+        </ListItem>
+
+        <ListItem sx={{py: 0.5}}>
+          <ListItemIcon sx={{minWidth: '30px'}}>
+            {requirements.length ?
+              <CheckCircleOutlineIcon sx={{color: 'success.main'}}/> :
+              <CancelOutlinedIcon sx={{color: 'error.main'}}/>}
+          </ListItemIcon>
+          <Typography
+            variant="body2"
+            sx={{
+              color: requirements.length ? 'success.main' : 'text.secondary',
+              fontWeight: requirements.length ? 500 : 400
+            }}
+          >
+            Be at least 8 characters
+          </Typography>
+        </ListItem>
+      </List>
+    </Box>
+  );
 
   const useStyles = {
     phoneInputContainer: {
@@ -260,35 +398,49 @@ const RegistrationForm = () => {
                 autoComplete="off"
               >
 
-                {formField(
-                  'Password',
-                  formData.password,
-                  Boolean(error.password),
-                  handleChange,
-                  "password",
-                  {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon sx={{color: '#667eea'}}/>
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleClickShowPassword}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOffIcon/> : <VisibilityIcon/>}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                  showPassword ? "text" : "password",
-                  error.password,
-                  handleChangeError
-                )}
-
-
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={11}>
+                    {formField(
+                      'Password',
+                      formData.password,
+                      Boolean(error.password),
+                      handleChange,
+                      "password",
+                      {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <LockIcon sx={{color: '#667eea'}}/>
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleClickShowPassword}
+                              edge="end"
+                            >
+                              {showPassword ? <VisibilityOffIcon/> : <VisibilityIcon/>}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
+                      showPassword ? "text" : "password",
+                      error.password,
+                      handleChangeError
+                    )}
+                  </Grid>
+                  <Grid item xs={12} md={1}>
+                    <Tooltip
+                      title={<PasswordRequirementsTooltip/>}
+                      placement="right-start"
+                      TransitionComponent={Zoom}
+                      arrow
+                    >
+                      <IconButton edge="end" sx={{mr: 1}}>
+                        <InfoOutlinedIcon/>
+                      </IconButton>
+                    </Tooltip>
+                  </Grid>
+                </Grid>
                 {formField(
                   'Repeat Password',
                   formData.repeatPassword,
@@ -314,8 +466,9 @@ const RegistrationForm = () => {
                   },
                   showRepeatPassword ? "text" : "password",
                   error.repeatPassword,
-                  handleChangeError
+                  handleChangeError,
                 )}
+
                 <TextField
                   fullWidth
                   label="Date of birth"

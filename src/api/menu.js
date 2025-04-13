@@ -14,7 +14,7 @@ export const getMenu = async () => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
   }
 };
 
@@ -26,7 +26,7 @@ export const createMenu = async (json) => {
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
   }
 };
 
@@ -46,7 +46,7 @@ export const deleteMenu = async (id) => {
       }
     });
   } catch (error) {
-    console.error('error: ', error)
+    return error
   }
 }
 /**
@@ -62,6 +62,6 @@ export const updateMenu = async (id, json) => {
       },
     });
   } catch (error) {
-    console.error('error: ', error)
+    return error
   }
 }
