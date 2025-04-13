@@ -71,8 +71,12 @@ const User = () => {
     let filtered = [...users];
 
     if (advancedSearch.full_name) {
+      console.log(advancedSearch.full_name);
       filtered = filtered.filter(user =>
-        user.full_name.toLowerCase().includes(advancedSearch.full_name.toLowerCase())
+      {
+        console.log(JSON.stringify(user) + " Drugo za stampu")
+       return user?.full_name?.toLowerCase().includes(advancedSearch?.full_name?.toLowerCase())
+      }
       );
     }
     if (advancedSearch.username) {
@@ -96,7 +100,7 @@ const User = () => {
         job.title.toLowerCase().includes(advancedSearch.job_position.toLowerCase())
       );
       filtered = filtered.filter(user =>
-        user.job_position_id === filter.id
+        user?.job_position_id === filter?.id
       );
     }
 
