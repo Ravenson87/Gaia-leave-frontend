@@ -11,12 +11,12 @@ const AppHeaderDropdown = () => {
     <CDropdown variant="nav-item" onClick={() => navigate('/profile')}>
       <CDropdownToggle placement="bottom-end" className="py-0" caret={false} onClick={() => navigate('/profile')}>
         {
-          user.profile_image && user.profile_image.startsWith('http')
-            ? <CAvatar src={user.profile_image} size="md" />
+          user?.profile_image && user?.profile_image?.startsWith('http')
+            ? <CAvatar src={user?.profile_image} size="md" />
             : initialsAvatar(
-              user?.first_name && user.last_name
+              user?.first_name && user?.last_name
                 ? user.first_name.charAt(0).toUpperCase() + user.last_name.charAt(0).toUpperCase()
-                : ''
+                : 'SY'
             )
         }      </CDropdownToggle>
     </CDropdown>
