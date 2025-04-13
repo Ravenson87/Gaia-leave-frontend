@@ -95,6 +95,7 @@ const UserProfile = () => {
   };
 
   function get() {
+
     const token = cookies.get('token')
     const jwtDecodeToken = jwtDecode(token);
 
