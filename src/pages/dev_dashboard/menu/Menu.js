@@ -92,11 +92,6 @@ const Menu = () => {
         <Card elevation={3} sx={{ borderRadius: 2 }}>
           <CardHeader
             title={<Typography variant="h5">Menu Management</Typography>}
-            action={
-              <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateModal(true)}>
-                Create New Menu
-              </Button>
-            }
           />
           <Divider />
           <CardContent>

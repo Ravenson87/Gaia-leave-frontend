@@ -107,7 +107,7 @@ const UpdateJobPosition = ({ setUpdateModal, get, editData }) => {
           title={
             <Stack direction="row" spacing={1} alignItems="center">
               <EditIcon color="primary" />
-              <Typography variant="h6">Edit Job Position</Typography>
+              <Typography variant="h6">Edit Job Position: {editData?.title?.toUpperCase()}</Typography>
             </Stack>
           }
           action={

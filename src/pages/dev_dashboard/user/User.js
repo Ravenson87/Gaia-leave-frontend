@@ -71,12 +71,11 @@ const User = () => {
     let filtered = [...users];
 
     if (advancedSearch.full_name) {
-      console.log(advancedSearch.full_name);
-      filtered = filtered.filter(user =>
-      {
-        console.log(JSON.stringify(user) + " Drugo za stampu")
-       return user?.full_name?.toLowerCase().includes(advancedSearch?.full_name?.toLowerCase())
-      }
+
+      filtered = filtered.filter(user => {
+          const fullName = user?.first_name + " " + user?.last_name;
+          return fullName?.toLowerCase().includes(advancedSearch?.full_name?.toLowerCase())
+        }
       );
     }
     if (advancedSearch.username) {
@@ -210,6 +209,7 @@ const User = () => {
                         size="small"
                         variant="outlined"
                         name="full_name"
+                        value={advancedSearch.full_name}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Full name"
                       />
@@ -220,6 +220,7 @@ const User = () => {
                         size="small"
                         variant="outlined"
                         name="username"
+                        value={advancedSearch.username}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Username"
                       />
@@ -230,6 +231,7 @@ const User = () => {
                         size="small"
                         variant="outlined"
                         name="email"
+                        value={advancedSearch.email}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Email"
                       />
@@ -240,6 +242,7 @@ const User = () => {
                         size="small"
                         variant="outlined"
                         name="role"
+                        value={advancedSearch.role}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Role"
                       />
@@ -250,6 +253,7 @@ const User = () => {
                         size="small"
                         variant="outlined"
                         name="job_position"
+                        value={advancedSearch.job_position}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Job position"
                       />

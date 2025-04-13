@@ -27,6 +27,7 @@ import {deleteJobPosition, getJobPosition} from "../../../api/jobPosition";
 import CreateJobPosition from "./developer-dashboard-job-position/create";
 import AlertDialog from "../../../components/Modal";
 import UpdateRole from "../role/developer-dashboard-role/update";
+import UpdateJobPosition from "./developer-dashboard-job-position/update";
 
 const JobPosition = () => {
   const [jobPositions, setJobPositions] = useState([]);
@@ -68,7 +69,7 @@ const JobPosition = () => {
 
   const handleEditClick = (job) => {
     setSelectedJob(job);
-    setCreateModal(true);
+    setUpdateModal(true);
   };
 
   const handleDeleteClick = (jobId) => {
@@ -138,7 +139,7 @@ const JobPosition = () => {
 
   return (
     <Box sx={{width: "100%"}}>
-      {!createModal && (
+      {!createModal && !updateModal && (
         <Card elevation={3} sx={{borderRadius: 2}}>
           <CardHeader
             title={<Typography variant="h5">Job Position Management</Typography>}
@@ -180,6 +181,7 @@ const JobPosition = () => {
                         size="small"
                         variant="outlined"
                         name="description"
+                        value={advancedSearch.description}
                         onChange={handleAdvancedSearchChange}
                         placeholder="Search Description"
                       />
@@ -257,7 +259,7 @@ const JobPosition = () => {
         </Card>
       )}
       {updateModal && (
-        <UpdateRole
+        <UpdateJobPosition
           setUpdateModal={setUpdateModal}
           get={fetchJobPositions}
           editData={selectedJob}

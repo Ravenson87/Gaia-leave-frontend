@@ -34,7 +34,6 @@ import UpdateRole from '../role/developer-dashboard-role/update';
 const Role = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   const [roles, setRoles] = useState([]);
   const [filteredRoles, setFilteredRoles] = useState([]);
@@ -315,7 +314,7 @@ const Role = () => {
                         <TextField
                           fullWidth
                           size="small"
-                          label="Name"
+                          label="Search Name"
                           name="name"
                           value={advancedSearch.name}
                           onChange={handleAdvancedSearchChange}
@@ -328,6 +327,7 @@ const Role = () => {
                           size="small"
                           variant="outlined"
                           name="description"
+                          value={advancedSearch.description}
                           onChange={handleAdvancedSearchChange}
                           placeholder="Search Description"
                         />
@@ -338,6 +338,7 @@ const Role = () => {
                           size="small"
                           variant="outlined"
                           name="created_by"
+                          value={advancedSearch.created_by}
                           onChange={handleAdvancedSearchChange}
                           placeholder="Search Created By"
                         />
@@ -348,6 +349,7 @@ const Role = () => {
                           size="small"
                           variant="outlined"
                           name="created_date"
+                          value={advancedSearch.created_date}
                           onChange={handleAdvancedSearchChange}
                           placeholder="Search Created Date"
                         />
@@ -358,6 +360,7 @@ const Role = () => {
                           size="small"
                           variant="outlined"
                           name="last_modified_by"
+                          value={advancedSearch.last_modified_by}
                           onChange={handleAdvancedSearchChange}
                           placeholder="Search Last Modified By"
                         />
