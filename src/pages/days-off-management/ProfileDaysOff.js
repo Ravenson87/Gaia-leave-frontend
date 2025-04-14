@@ -142,7 +142,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
       {
         user_id: user.id,
         calendar_id: calendarId.id,
-        overtime_hours: overtimeEntry.hours
+        overtime_hours: parseFloat(overtimeEntry.hours)
         // overtime_hours: (overtimeEntry.status === 'positive' ? '+' : '-') + overtimeEntry.hours
       }
     ]
@@ -205,7 +205,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
   const handleDocumentUpload = () => {
     documentUpload(userData.id, newDocument).then(response => {
       setShowModal({...showModal, document: false})
-      if (response.status !== 201) {
+      if (response.status === 201) {
         setUser(prevUser => ({
           ...prevUser,
           userDocuments: [...prevUser.userDocuments, response.data]
@@ -285,7 +285,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
     };
     setUser(updated);
 
-    saveData(freeDaysEntry, user.userTotalAttendance.total_working_hours || userData.userTotalAttendance.total_working_hours)
+    saveData(freeDaysEntry, user?.userTotalAttendance?.total_working_hours || userData?.userTotalAttendance?.total_working_hours)
   };
 
   const handleAddWorkingHours = () => {
@@ -405,7 +405,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
         <div>
           {activeTab === 0 &&
             <UserProfile
-              user={userData}
+              user={user}
               editMode={editMode}
               toggleEditMode={toggleEditMode}
               handleInputChange={handleInputChange}
