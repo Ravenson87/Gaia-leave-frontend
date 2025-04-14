@@ -32,8 +32,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
   const dayTypes = [
     {id: 1, name: 'NATIONAL_HOLIDAY', label: 'National Holiday', color: '#FF9800'},
     {id: 2, name: 'RELIGIOUS_HOLIDAY', label: 'Religious Holiday', color: '#9C27B0'},
-    {id: 3, name: 'WORKING_DAY', label: 'Working Day', color: '#4CAF50'},
-    {id: 4, name: 'WEEKEND_DAY', label: 'Weekend', color: '#BDBDBD'},
+    {id: 3, name: 'WORKING_DAY', label: 'Working Day', color: '#4CAF50'}
   ];
 
   const months = [
