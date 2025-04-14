@@ -42,7 +42,8 @@ export async function tokenData(user, password, dispatch, setPasswordFeedback) {
     }
     return true
   } else {
-    setPasswordFeedback({type: 'danger', message: response?.response.data.message});
+    console.log("response", response)
+    setPasswordFeedback({type: 'danger', message: response?.response?.data?.message || 'Failed to login.'} );
     cookies.remove("token");
     cookies.remove("refresh_token");
     await redirectToLogin();
