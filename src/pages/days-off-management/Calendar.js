@@ -219,7 +219,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
       borderColor: borderColor
     };
 
-    return (
+    const cellContent = (
       <div
         className={`calendar-cell ${isSelected ? 'selected' : ''}`}
         style={style}
@@ -233,6 +233,26 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
         )}
       </div>
     );
+
+    // Ako postoji opis za taj datum, dodajemo tooltip
+    if (dateInfo && dateInfo.description) {
+      return (
+        <Tooltip
+          title={
+            <div>
+              <Typography variant="subtitle2">{getDayTypeName(dateInfo.type)}</Typography>
+              <Typography variant="body2">{dateInfo.description}</Typography>
+            </div>
+          }
+          arrow
+          placement="top"
+        >
+          {cellContent}
+        </Tooltip>
+      );
+    }
+
+    return cellContent;
   };
 
   const renderMonth = (monthIndex) => {
@@ -353,6 +373,24 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
             }}/>
             <Typography variant="body2">Choosen day</Typography>
           </div>
+          <div className="legend-item">
+            <Box sx={{
+              width: 16,
+              height: 16,
+              position: 'relative',
+              backgroundColor: '#fff',
+              border: '1px dashed #2196F3'
+            }}>
+              <Box sx={{
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+                height: '4px',
+                backgroundColor: '#2196F3'
+              }}/>
+            </Box>
+            <Typography variant="body2">Has description</Typography>
+          </div>
         </div>
       </div>
 
@@ -433,8 +471,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
           </Button>
           <Button
             onClick={() => {
-              updateDateType(dateInfo.id, selectedType.type || dateInfo.type);
-              handleDialogClose();
+              updateDateType(dateInfo.id, selectedType?.type || dateInfo.type);
             }}
             variant="contained"
             color="primary"
@@ -603,6 +640,14 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
           .months-grid {
             grid-template-columns: 1fr;
           }
+        }
+
+        .has-description-indicator {
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          height: 3px;
+          background-color: #2196F3;
         }
       `}</style>
     </div>
