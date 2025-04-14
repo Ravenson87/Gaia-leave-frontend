@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {Search} from 'lucide-react';
-import {getMenu} from "../../../api/menu";
+import {createMenu, getMenu} from "../../../api/menu";
 import {getRole} from "../../../api/role";
 import {createEndpointRole, createMenuRole, deleteMenuRole, getEndpoint} from "../../../api/menuRole";
 import EndpointsManagement from "./developer-dashboard-assigned-accesability/Endpoints";
 import MenuManagement from "./developer-dashboard-assigned-accesability/Menus";
+import {MENU_ITEMS} from "../../../helper/constants/Menu";
 
 const RoleCard = ({role, isSelected, onClick}) => (
   <div
@@ -35,7 +36,28 @@ const RoleEndpointMenuManagement = () => {
 
   useEffect(() => {
     fetchData();
+
+    fetchMenu()
   }, []);
+
+  const fetchMenu = async () => {
+    try {
+      const response = await getMenu();
+      if (response.status === 200) {
+        const filtered = MENU_ITEMS.filter(menuItem =>
+          !response.data.some(existing =>
+            existing.menu_number === menuItem.menu_number && existing.name === menuItem.name
+          )
+        );
+
+        await createMenu(filtered)
+      } else if (response.status === 204) {
+        await createMenu(MENU_ITEMS)
+      }
+    } catch (error) {
+      console.error('Failed to fetch menu:', error);
+    }
+  };
 
   function fetchData() {
     setIsLoading(true);

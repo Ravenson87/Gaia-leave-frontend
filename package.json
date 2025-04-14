@@ -18,7 +18,6 @@
     "lint": "eslint \"src/**/*.js\"",
     "start": "react-scripts start",
     "test": "react-scripts test",
-    "dev": "yarn env-cmd -f .env.dev yarn start",
     "test:cov": "npm test -- --coverage --watchAll=false",
     "test:debug": "react-scripts --inspect-brk test --runInBand"
   },

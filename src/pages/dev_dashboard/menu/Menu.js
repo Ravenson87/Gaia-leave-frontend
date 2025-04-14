@@ -22,10 +22,11 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import {deleteMenu, getMenu} from '../../../api/menu';
+import {createMenu, deleteMenu, getMenu} from '../../../api/menu';
 import CreateMenu from './developer-dashboard-menu/create';
 import AlertDialog from '../../../components/Modal';
 import UpdateMenu from "./developer-dashboard-menu/update";
+import {MENU_ITEMS} from "../../../helper/constants/Menu";
 
 const Menu = () => {
   const [menu, setMenu] = useState([]);
@@ -34,7 +35,7 @@ const Menu = () => {
   const [createModal, setCreateModal] = useState(false);
   const [updateModal, setUpdateModal] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState(null);
-  const [alertDialog, setAlertDialog] = useState({ open: false, data: null });
+  const [alertDialog, setAlertDialog] = useState({open: false, data: null});
 
   useEffect(() => {
     fetchMenu();
@@ -44,9 +45,23 @@ const Menu = () => {
     try {
       const response = await getMenu();
       if (response.status === 200) {
-        setMenu(response.data);
-      } else {
-        setMenu([]);
+        const filtered = MENU_ITEMS.filter(menuItem =>
+          !response.data.some(existing =>
+            existing.menu_number === menuItem.menu_number && existing.name === menuItem.name
+          )
+        );
+
+        // filtered.forEach((menuItem) => {
+        //   const formData = {
+        //     menu_number: menuItem.menu_number,
+        //     name: menuItem.name,
+        //     description: menuItem.description,
+        //   }
+        //   createMenu(formData)
+        // })
+        await createMenu(filtered)
+      } else if (response.status === 204) {
+        await createMenu(MENU_ITEMS)
       }
     } catch (error) {
       console.error('Failed to fetch menu:', error);
@@ -71,7 +86,7 @@ const Menu = () => {
   };
 
   const handleAlertDialogClose = () => {
-    setAlertDialog({ open: false, data: null });
+    setAlertDialog({open: false, data: null});
   };
 
   const handleAlertDialogAgree = async (data) => {
@@ -87,13 +102,13 @@ const Menu = () => {
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{width: '100%'}}>
       {!createModal && !updateModal && (
-        <Card elevation={3} sx={{ borderRadius: 2 }}>
+        <Card elevation={3} sx={{borderRadius: 2}}>
           <CardHeader
             title={<Typography variant="h5">Menu Management</Typography>}
           />
-          <Divider />
+          <Divider/>
           <CardContent>
             <TableContainer component={Paper} variant="outlined">
               <Table>
@@ -105,7 +120,7 @@ const Menu = () => {
                     <TableCell>Created By</TableCell>
                     <TableCell>Created Date</TableCell>
                     <TableCell>Last Modified Date</TableCell>
-                    <TableCell>Actions</TableCell>
+                    {/*<TableCell>Actions</TableCell>*/}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -117,20 +132,20 @@ const Menu = () => {
                       <TableCell>{item.created_by || 'N/A'}</TableCell>
                       <TableCell>{new Date(item.created_date).toLocaleString()}</TableCell>
                       <TableCell>{new Date(item.last_modified_date).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1}>
-                          <Tooltip title="Edit">
-                            <IconButton color="primary" onClick={() => handleEditClick(item)}>
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton color="error" onClick={() => handleDeleteClick(item.id)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
+                      {/*<TableCell>*/}
+                      {/*  <Stack direction="row" spacing={1}>*/}
+                      {/*    <Tooltip title="Edit">*/}
+                      {/*      <IconButton color="primary" onClick={() => handleEditClick(item)}>*/}
+                      {/*        <EditIcon/>*/}
+                      {/*      </IconButton>*/}
+                      {/*    </Tooltip>*/}
+                      {/*    <Tooltip title="Delete">*/}
+                      {/*      <IconButton color="error" onClick={() => handleDeleteClick(item.id)}>*/}
+                      {/*        <DeleteIcon/>*/}
+                      {/*      </IconButton>*/}
+                      {/*    </Tooltip>*/}
+                      {/*  </Stack>*/}
+                      {/*</TableCell>*/}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -148,7 +163,7 @@ const Menu = () => {
           </CardContent>
         </Card>
       )}
-      {createModal && <CreateMenu setVisible={setCreateModal} get={fetchMenu} editData={selectedMenu} />}
+      {/*<CreateMenu setVisible={setCreateModal} get={fetchMenu} editData={selectedMenu}/>*/}
       {updateModal && (
         <UpdateMenu
           setUpdateModal={setUpdateModal}
@@ -156,7 +171,8 @@ const Menu = () => {
           editData={selectedMenu}
         />
       )}
-      <AlertDialog open={alertDialog.open} setOpen={handleAlertDialogClose} data={alertDialog.data} agreement={handleAlertDialogAgree} />
+      <AlertDialog open={alertDialog.open} setOpen={handleAlertDialogClose} data={alertDialog.data}
+                   agreement={handleAlertDialogAgree}/>
     </Box>
   );
 };
