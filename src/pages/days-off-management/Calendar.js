@@ -161,7 +161,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
     setLoading(true);
     updateCalendarByType(id, type, description)
       .then(() => {
-        showNotification("Successgully updated", "success");
+        showNotification("Successfully updated", "success");
         handleDialogClose();
         fetchCalendarData();
       })

@@ -158,15 +158,19 @@ export const deleteMenu = async (id) => {
   }
 }
 /**
- * @param id
- * @param type
+ * @param id Integer
+ * @param type String
+ * @param description String
  * @returns {Promise<axios.AxiosResponse<any>>}
  */
-export const updateCalendarByType = async (id, type) => {
+export const updateCalendarByType = async (id, type, description) => {
+  const formData = new FormData();
+  formData.append("type", type);
+  formData.append("description", description);
   try {
     return await axios.put(
-      `${api}/api/v1/calendar/update-by-type/${id}/${type}`,
-      {},
+      `${api}/api/v1/calendar/update-by-type/${id}`,
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
