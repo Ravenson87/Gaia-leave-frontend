@@ -22,7 +22,7 @@ export function validatePassword(password) {
   return newErrors;
 }
 
-export function passwordRequirements(password, setRequirements, setShowRequirements) {
+export function passwordRequirements(password, setRequirements, setShowRequirements, show = false) {
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
@@ -39,7 +39,12 @@ export function passwordRequirements(password, setRequirements, setShowRequireme
     hasLowerCase &&
     hasNumber &&
     hasSpecial;
-  setShowRequirements(!isSomeValid);
+  if (show) {
+    setShowRequirements(!isSomeValid);
+  } else {
+    setShowRequirements(false);
+  }
+
 }
 
 /**

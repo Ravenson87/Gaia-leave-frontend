@@ -64,17 +64,29 @@ const UserProfile = () => {
     }
 
     setIsSubmitting(true);
-    updateUserPassword(userData.id, formData.currentPassword, formData.newPassword)
-      .then(() => {
-        setPasswordFeedback({
-          type: 'success',
-          message: 'Password updated successfully!'
-        });
-        setFormData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
+    updateUserPassword(userData.id, formData.currentPassword, formData.newPassword, formData.confirmPassword)
+      .then((res) => {
+        if (res.status === 200) {
+          setPasswordFeedback({
+            type: 'success',
+            message: 'Password updated successfully!'
+          });
+          setFormData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+        } else {
+          setPasswordFeedback({
+            type: 'danger',
+            message: res?.response?.data?.message|| 'Failed to update password'
+          });
+          setFormData({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          });
+        }
       })
       .catch(error => {
         setPasswordFeedback({

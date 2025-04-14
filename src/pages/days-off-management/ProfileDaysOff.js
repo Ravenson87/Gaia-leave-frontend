@@ -546,11 +546,13 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
                   onChange={(e) => setNewFreeDay({...newFreeDay, type_id: e.target.value})}
                 >
                   <option value="">Select type</option>
-                  {freeDayTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.description} ({type.type})
-                    </option>
-                  ))}
+                  {freeDayTypes
+                    .filter((type) => type.type !== "personal_holiday")
+                    .map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.description} ({type.type})
+                      </option>
+                    ))}
                 </Form.Select>
               </Form.Group>
             </Modal.Body>

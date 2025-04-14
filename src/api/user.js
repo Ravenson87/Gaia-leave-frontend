@@ -30,7 +30,7 @@ export const getUserById = async (id) => {
   }
 };
 
-export const getMailHistoryByAddress= async (addresses) => {
+export const getMailHistoryByAddress = async (addresses) => {
   try {
     return await axios.get(`${api}/api/v1/mail-history/read-by-addresses?addresses=${addresses}`, {
       headers: {
@@ -38,7 +38,7 @@ export const getMailHistoryByAddress= async (addresses) => {
       },
     });
   } catch (error) {
-   return []
+    return []
   }
 };
 
@@ -83,7 +83,7 @@ export const documentUpload = async (user_id, file) => {
       },
     });
   } catch (error) {
-   return error;
+    return error;
   }
 };
 
@@ -99,7 +99,7 @@ export const createMailByAddress = async (to, subject, body) => {
       },
     });
   } catch (error) {
-   return error;
+    return error;
   }
 };
 
@@ -186,17 +186,16 @@ export const updateUploadProfileImage = async (file, user_id) => {
 
 export const updateUserPassword = async (id, old_password, new_password) => {
   try {
-    const json = {
-      old_password: old_password,
-      new_password: new_password
-    }
-    return await axios.put(`${api}/update-password/${id}`, json, {
+    const formData = new FormData();
+    formData.append("old_password", old_password);
+    formData.append("new_password", new_password);
+    return await axios.put(`${api}/api/v1/user/update-password/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   } catch (error) {
-    console.log(error)
+    return error
   }
 };
 
@@ -205,7 +204,7 @@ export const updateUserStatus = async (id, status) => {
     const formData = new FormData();
     formData.append("id", id);
     formData.append("status", status);
-    return await axios.put(`${api}/api/v1/user/update-status/${id}`, formData,{
+    return await axios.put(`${api}/api/v1/user/update-status/${id}`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

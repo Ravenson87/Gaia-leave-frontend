@@ -135,6 +135,7 @@ const YearlyAvailabilityCalendar = ({year = 2025}) => {
         day: new Date(dateInfo.date).getDate(),
         month: months[new Date(dateInfo.date).getMonth()]
       });
+      setDescription(dateInfo.description || "");
       setOpen(true);
     } else {
       const isDateSelected = selectedDates.some(d => d.date === dateString);

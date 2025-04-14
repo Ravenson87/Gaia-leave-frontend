@@ -70,7 +70,7 @@ const Login = () => {
 
   async function login() {
     setPasswordFeedback({type: '', message: ''});
-    passwordRequirements(formData.password, setRequirements, setShowRequirements)
+    passwordRequirements(formData.password, setRequirements, setShowRequirements, true)
 
     const validate = validateLoginForm(formData);
     setError(validate.validation)
@@ -187,6 +187,9 @@ const Login = () => {
               handleKeyDown,
               showRequirements,
               requirements,
+              formData,
+              setRequirements,
+              setShowRequirements
             )}
             {/*<Typography*/}
             {/*  variant="body2"*/}
@@ -245,7 +248,10 @@ function loginField(
   handleChangeError,
   handleKeyDown,
   showRequirements,
-  requirements
+  requirements,
+  formData,
+  setRequirements,
+  setShowRequirements
 ) {
   return (
     <>
@@ -259,6 +265,9 @@ function loginField(
         onChange={(e) => {
           changeHandler(e.target.value, name);
           handleChangeError(name);
+          if (name === 'password') {
+            passwordRequirements(formData.password, setRequirements, setShowRequirements)
+          }
         }}
         onKeyDown={handleKeyDown}
         InputProps={inputProps}
