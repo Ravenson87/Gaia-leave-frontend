@@ -49,8 +49,9 @@ const RoleEndpointMenuManagement = () => {
             existing.menu_number === menuItem.menu_number && existing.name === menuItem.name
           )
         );
-
-        await createMenu(filtered)
+        if (filtered.length > 0) {
+          await createMenu(filtered)
+        }
       } else if (response.status === 204) {
         await createMenu(MENU_ITEMS)
       }

@@ -50,18 +50,21 @@ const Menu = () => {
             existing.menu_number === menuItem.menu_number && existing.name === menuItem.name
           )
         );
+        setMenu(response.data)
+        if (filtered.length > 0) {
+          createMenu(filtered).then(() => {
+            getMenu().then((response) => {
+              setMenu(response.data);
+            })
+          })
 
-        // filtered.forEach((menuItem) => {
-        //   const formData = {
-        //     menu_number: menuItem.menu_number,
-        //     name: menuItem.name,
-        //     description: menuItem.description,
-        //   }
-        //   createMenu(formData)
-        // })
-        await createMenu(filtered)
+        }
       } else if (response.status === 204) {
-        await createMenu(MENU_ITEMS)
+        createMenu(MENU_ITEMS).then(() => {
+          getMenu().then((response) => {
+            setMenu(response.data);
+          })
+        })
       }
     } catch (error) {
       console.error('Failed to fetch menu:', error);
