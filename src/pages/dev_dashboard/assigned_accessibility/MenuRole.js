@@ -177,7 +177,8 @@ const RoleEndpointMenuManagement = () => {
         if (changes.itemsNoLongerUnassigned.length > 0) {
           const deleteMenus = changes.itemsNoLongerUnassigned.map(item => item.id);
           for (const menuId of deleteMenus) {
-            await deleteMenuRole(menuId);
+            const selectedMenu = selectedRole?.roleMenus.find(item => item.menu.id === menuId);
+            await deleteMenuRole(selectedMenu.id);
           }
         }
       }
