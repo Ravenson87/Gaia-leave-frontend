@@ -23,28 +23,6 @@ const AppSidebar = () => {
   useEffect(() => {
     get()
   }, []);
-  const secondArray = [
-    {
-      menu_number: 2,
-      name: 'Developer dashboard',
-      to: '/role',
-    },
-    {
-      menu_number: 1,
-      name: 'Role',
-      to: '/role',
-    },
-    {
-      menu_number: 2,
-      name: 'Menu',
-      to: '/role',
-    },
-    {
-      menu_number: 2,
-      name: 'Calendar',
-      to: '/role',
-    },
-  ]
 
   function get() {
     const cookies = new Cookies();
@@ -54,7 +32,7 @@ const AppSidebar = () => {
       setNav(navigation)
     } else {
       getUserById(jwtDecodeToken.id).then((data) => {
-        const filteredNav = filterNavItems(navigation, data?.role?.roleMenus || []);
+        const filteredNav = filterNavItems(navigation, data?.data?.role?.roleMenus || []);
         setNav(filteredNav)
       })
     }
@@ -64,11 +42,9 @@ const AppSidebar = () => {
   function filterNavItems(nav, secondArray) {
 
     let result = [];
-
-
     nav.forEach(group => {
       const filteredItems = group.items.filter(item => {
-        return secondArray.some(menu => menu.name === item.name);
+        return secondArray.some(menu => menu?.menu?.name === item.name);
       });
 
       if (filteredItems.length > 0) {
@@ -81,7 +57,6 @@ const AppSidebar = () => {
 
     return result;
   }
-
 
   return (
     <CSidebar
