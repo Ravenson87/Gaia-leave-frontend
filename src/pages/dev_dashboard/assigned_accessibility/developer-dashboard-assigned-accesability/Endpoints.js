@@ -2,8 +2,9 @@ import React, {useState} from 'react';
 import {Check, Code, Search, Server} from 'lucide-react';
 import {Accordion, AccordionDetails, AccordionSummary, Typography} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {createEndpointRole, deleteEndpointRole} from "../../../../api/menuRole";
 
-const EndpointsManagement = ({groupedEndpoints, splitCamelCase, toggleEndpointAssignment}) => {
+const EndpointsManagement = ({groupedEndpoints, splitCamelCase, toggleEndpointAssignment, selectedRole, showToast}) => {
   const [expandedGroups, setExpandedGroups] = useState({});
 
   const handleAccordionChange = (group) => (event, isExpanded) => {
@@ -44,6 +45,37 @@ const EndpointsManagement = ({groupedEndpoints, splitCamelCase, toggleEndpointAs
         return 'bg-secondary';
     }
   };
+
+  async function setUpOrRemoveEndpoints(assigned, endpoint, selectedRole) {
+    if (assigned) {
+      const selected = selectedRole?.roleEndpoints.find(item => item.endpoint.id === endpoint.id);
+      const res = await deleteEndpointRole(selected.id);
+      if (res.status === 200) {
+        const selected = selectedRole.name
+        toggleEndpointAssignment(endpoint, selected)
+        showToast("Successfully deleted!", "success");
+      } else {
+        showToast(res?.response?.data?.message || "Failed to delete. Please try again.", "error");
+      }
+    } else {
+      const data = [
+        {
+          endpoint_id: endpoint.id,
+          role_id: selectedRole.id,
+        }
+      ]
+      const res = await createEndpointRole(data);
+      if (res.status === 200) {
+        const selected = selectedRole.name
+        toggleEndpointAssignment(endpoint, selected)
+        showToast("Successfully created!", "success");
+      } else {
+        showToast(res?.response?.data?.message || "Failed to create. Please try again.", "error");
+      }
+      console.log(res, 'createEndpointRole')
+    }
+
+  }
 
   return (
     <div className="endpoints-management">
@@ -106,7 +138,7 @@ const EndpointsManagement = ({groupedEndpoints, splitCamelCase, toggleEndpointAs
                         </div>
                         <button
                           className={`btn ${endpoint.assigned ? 'btn-success' : 'btn-outline-secondary'} btn-sm`}
-                          onClick={() => toggleEndpointAssignment(endpoint)}
+                          onClick={() => setUpOrRemoveEndpoints(endpoint.assigned, endpoint, selectedRole)}
                           title={endpoint.assigned ? "Remove access" : "Grant access"}
                         >
                           {endpoint.assigned ? <Check size={16}/> : 'Assign'}

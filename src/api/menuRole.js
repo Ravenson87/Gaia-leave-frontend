@@ -73,6 +73,27 @@ export const deleteMenuRole = async (id) => {
         return error
     }
 }
+
+/**
+ *
+ * @param id
+ * @returns {Promise<axios.AxiosResponse<any>>}
+ */
+export const deleteEndpointRole = async (id) => {
+  try {
+    return await axios.delete(`${api}/api/v1/role-endpoint/delete`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        id: id
+      }
+    });
+  } catch (error) {
+    return error
+  }
+}
+
 /**
  * @param id
  * @param json

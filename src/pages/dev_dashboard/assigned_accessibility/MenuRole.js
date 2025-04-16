@@ -2,10 +2,17 @@ import React, {useEffect, useState} from 'react';
 import {Search} from 'lucide-react';
 import {createMenu, getMenu} from "../../../api/menu";
 import {getRole} from "../../../api/role";
-import {createEndpointRole, createMenuRole, deleteMenuRole, getEndpoint} from "../../../api/menuRole";
+import {
+  createEndpointRole,
+  createMenuRole,
+  deleteEndpointRole,
+  deleteMenuRole,
+  getEndpoint
+} from "../../../api/menuRole";
 import EndpointsManagement from "./developer-dashboard-assigned-accesability/Endpoints";
 import MenuManagement from "./developer-dashboard-assigned-accesability/Menus";
 import {MENU_ITEMS} from "../../../helper/constants/Menu";
+import {Alert, Snackbar} from "@mui/material";
 
 const RoleCard = ({role, isSelected, onClick}) => (
   <div
@@ -33,6 +40,11 @@ const RoleEndpointMenuManagement = () => {
   const [activeTab, setActiveTab] = useState('endpoints');
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState(null);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success"
+  });
 
   useEffect(() => {
     fetchData();
@@ -60,13 +72,36 @@ const RoleEndpointMenuManagement = () => {
     }
   };
 
-  function fetchData() {
+  function fetchData(set = false, selectedRole) {
     setIsLoading(true);
     Promise.all([
       getMenu(),
       getRole(),
       getEndpoint()
     ]).then(([menuRes, roleRes, endpointRes]) => {
+
+      if (set) {
+        const selected = roleRes.data.find(item => item.name === selectedRole);
+        setSelectedRole(selected);
+        setSaveStatus(null);
+
+        const menus = roleRes?.roleMenus?.map(item => item.menu);
+        const updatedMenus = menuData.map(menu => ({
+          ...menu,
+          assigned: menus?.some(assigned => assigned.id === menu.id)
+        }));
+
+        const endpoints = roleRes?.roleEndpoints?.map(item => item.endpoint);
+        const updatedEndpoint = endpointData.map(endpoint => ({
+          ...endpoint,
+          assigned: endpoints.some(assigned => assigned.id === endpoint.id)
+        }));
+
+        setInitialEndpoints(updatedEndpoint);
+        setInitialMenus(updatedMenus);
+        setEndpoints(updatedEndpoint);
+        setMenus(updatedMenus);
+      }
       setMenuData(menuRes.data);
       setRoles(roleRes.data);
       setEndpointData(endpointRes.data);
@@ -76,6 +111,15 @@ const RoleEndpointMenuManagement = () => {
       setIsLoading(false);
     });
   }
+
+  const showToast = (message, severity) => {
+    setToast({
+      open: true,
+      message,
+      severity
+    });
+  };
+
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -104,21 +148,24 @@ const RoleEndpointMenuManagement = () => {
     setActiveTab('endpoints');
   };
 
-  const toggleEndpointAssignment = (endpoint) => {
+  const toggleEndpointAssignment = (endpoint, selected) => {
     if (!selectedRole) return;
 
     setEndpoints(endpoints.map(ep =>
       ep.id === endpoint.id ? {...ep, assigned: !ep.assigned} : ep
     ));
+
+    fetchData(true, selected);
     setSaveStatus(null);
   };
 
-  const toggleMenuAssignment = (menu) => {
+  const toggleMenuAssignment = (menu, selected) => {
     if (!selectedRole) return;
 
     setMenus(menus.map(m =>
       m.id === menu.id ? {...m, assigned: !m.assigned} : m
     ));
+    fetchData(true, selected);
     setSaveStatus(null);
   };
 
@@ -164,7 +211,10 @@ const RoleEndpointMenuManagement = () => {
         if (changes.itemsNoLongerUnassigned.length > 0) {
           const deleteEndpoints = changes.itemsNoLongerUnassigned.map(item => item.id);
 
-          console.log("Endpoints to delete:", deleteEndpoints);
+          for (const endpointId of deleteEndpoints) {
+            const selected = selectedRole?.roleEndpoints.find(item => item.endpoint.id === endpointId);
+            await deleteEndpointRole(selected.id);
+          }
         }
       } else {
         const changes = await findAssignmentChanges(menus, initialMenus);
@@ -187,6 +237,12 @@ const RoleEndpointMenuManagement = () => {
     } catch (error) {
       console.error("Error saving assignments:", error);
       setSaveStatus('error');
+    } finally {
+      setTimeout(() => {
+        const selected = selectedRole.name
+        fetchData(true, selected);
+        setSelectedMenu(null);
+      }, 2000);
     }
   };
 
@@ -214,23 +270,29 @@ const RoleEndpointMenuManagement = () => {
       .join(" ");
   }
 
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToast({...toast, open: false});
+  };
   return (
     <div className="container-fluid py-4">
       <div className="row">
         <div className="col-12">
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h1 className="h3 mb-0">Role-Based Access Control</h1>
-            {selectedRole && (
-              <button
-                className={`btn ${saveStatus === 'success' ? 'btn-success' : saveStatus === 'error' ? 'btn-danger' : 'btn-primary'}`}
-                onClick={saveAssignments}
-                disabled={saveStatus === 'saving'}
-              >
-                {saveStatus === 'saving' ? 'Saving...' :
-                  saveStatus === 'success' ? 'Saved Successfully!' :
-                    saveStatus === 'error' ? 'Error Saving' : 'Save Assignments'}
-              </button>
-            )}
+            {/*{selectedRole && (*/}
+            {/*  <button*/}
+            {/*    className={`btn ${saveStatus === 'success' ? 'btn-success' : saveStatus === 'error' ? 'btn-danger' : 'btn-primary'}`}*/}
+            {/*    onClick={saveAssignments}*/}
+            {/*    disabled={saveStatus === 'saving'}*/}
+            {/*  >*/}
+            {/*    {saveStatus === 'saving' ? 'Saving...' :*/}
+            {/*      saveStatus === 'success' ? 'Saved Successfully!' :*/}
+            {/*        saveStatus === 'error' ? 'Error Saving' : 'Save Assignments'}*/}
+            {/*  </button>*/}
+            {/*)}*/}
           </div>
         </div>
       </div>
@@ -307,12 +369,16 @@ const RoleEndpointMenuManagement = () => {
                         <EndpointsManagement groupedEndpoints={groupedEndpoints}
                                              splitCamelCase={splitCamelCase}
                                              toggleEndpointAssignment={toggleEndpointAssignment}
+                                             selectedRole={selectedRole}
+                                             showToast={showToast}
                         />
                       ) : (
                         <MenuManagement filteredMenus={filteredMenus}
                                         selectedMenu={selectedMenu}
                                         toggleMenuAssignment={toggleMenuAssignment}
                                         handleMenuSelect={handleMenuSelect}
+                                        selectedRole={selectedRole}
+                                        showToast={showToast}
                         />
                       )}
                     </div>
@@ -333,6 +399,16 @@ const RoleEndpointMenuManagement = () => {
           </div>
         </div>
       )}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

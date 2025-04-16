@@ -1,7 +1,47 @@
 import React from "react";
 import {Check, Search,} from 'lucide-react';
+import {createEndpointRole, createMenuRole, deleteEndpointRole, deleteMenuRole} from "../../../../api/menuRole";
 
-const MenuManagement = ({filteredMenus, selectedMenu, toggleMenuAssignment, handleMenuSelect}) => {
+const MenuManagement = ({
+                          filteredMenus,
+                          selectedMenu,
+                          toggleMenuAssignment,
+                          handleMenuSelect,
+                          selectedRole,
+                          showToast
+                        }) => {
+
+  async function setUpOrRemoveMenus(assigned, menu, selectedRole) {
+    if (assigned) {
+      const selected = selectedRole?.roleMenus.find(item => item.menu.id === menu.id);
+      const res = await deleteMenuRole(selected.id);
+      if (res.status === 200) {
+        const selected = selectedRole.name
+        toggleMenuAssignment(menu, selected)
+        showToast("Successfully deleted!", "success");
+      } else {
+        showToast(res?.response?.data?.message || "Failed to delete. Please try again.", "error");
+      }
+
+    } else {
+      const data = [
+        {
+          menu_id: menu.id,
+          role_id: selectedRole.id,
+        }
+      ]
+      const res = await createMenuRole(data);
+      if (res.status === 200) {
+        const selected = selectedRole.name
+        toggleMenuAssignment(menu, selected)
+        showToast("Successfully created!", "success");
+      } else {
+        showToast(res?.response?.data?.message || "Failed to create. Please try again.", "error");
+      }
+    }
+
+  }
+
 
   const MenuListItem = ({menu}) => (
     <div
@@ -25,7 +65,7 @@ const MenuManagement = ({filteredMenus, selectedMenu, toggleMenuAssignment, hand
         className={`btn ${menu.assigned ? 'btn-success' : selectedMenu?.id === menu.id ? 'btn-outline-light' : 'btn-outline-secondary'} btn-sm`}
         onClick={(e) => {
           e.stopPropagation();
-          toggleMenuAssignment(menu);
+          setUpOrRemoveMenus(menu.assigned, menu, selectedRole)
         }}
       >
         {menu.assigned ? <Check size={16}/> : 'Assign'}
