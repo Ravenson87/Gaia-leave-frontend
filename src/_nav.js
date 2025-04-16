@@ -27,13 +27,18 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'User',
-        to: '/user',
+        name: 'Free day type',
+        to: '/free-day-type',
       },
       {
         component: CNavItem,
         name: 'Role Access',
         to: '/menu/role',
+      },
+      {
+        component: CNavItem,
+        name: 'User',
+        to: '/user',
       }
     ],
   },

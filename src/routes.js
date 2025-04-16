@@ -12,6 +12,7 @@ const Profile = React.lazy(() => import("./pages/profile/profile"));
 const DaysOffManagementDemo = React.lazy(() => import("./pages/days-off-management/DaysOffManagementDemo"));
 const Prof = React.lazy(() => import("./pages/days-off-management/ProfileDaysOff"));
 const DaysOffBooking = React.lazy(() => import("./pages/days-off-management/DaysOffBooking"));
+const FreeDayType = React.lazy(() => import("./pages/dev_dashboard/free_day_type/FreeDayType"));
 
 const routes = [
   {path: '/home', exact: true, name: 'Home', element: Home},
@@ -25,5 +26,6 @@ const routes = [
   {path: '/profile', name: 'Profile', element: Profile},
   {path: '/Prof', name: 'Prof', element: Prof},
   {path: '/days-off-booking', name: 'Days Off Booking', element: DaysOffBooking},
+  {path: '/free-day-type', name: 'Free day type', element: FreeDayType},
 ]
 export default routes;

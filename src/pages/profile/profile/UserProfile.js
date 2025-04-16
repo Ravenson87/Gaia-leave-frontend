@@ -165,7 +165,6 @@ const UserProfile = ({
           if (res.status === 200) {
             saveChanges(section);
             showNotification(`${section === 'personalInfo' ? 'Personal information' : 'Contact information'} saved successfully`);
-            saveChanges(section);
           }
         }).catch(err => {
           showNotification('Error saving changes');

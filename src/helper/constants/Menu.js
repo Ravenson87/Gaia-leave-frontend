@@ -21,8 +21,8 @@ export const MENU_ITEMS = [
   },
   {
     menu_number: 5,
-    name: "User",
-    description: "User management interface for creating and modifying accounts"
+    name: "Free day type",
+    description: "Configure and manage different types of free days such as holidays, vacations, and personal leave"
   },
   {
     menu_number: 6,
@@ -31,21 +31,26 @@ export const MENU_ITEMS = [
   },
   {
     menu_number: 7,
+    name: "User",
+    description: "User management interface for creating and modifying accounts"
+  },
+  {
+    menu_number: 8,
     name: "Schedule",
     description: "Scheduling and calendar management for team coordination"
   },
   {
-    menu_number: 8,
+    menu_number: 9,
     name: "Leave Requests",
     description: "Review and approve employee time-off and leave requests"
   },
   {
-    menu_number: 9,
+    menu_number: 10,
     name: "Team Calendar",
     description: "Shared calendar showing team availability and scheduled events"
   },
   {
-    menu_number: 10,
+    menu_number: 11,
     name: "Days Off Booking",
     description: "Interface for employees to request and schedule time off"
   }

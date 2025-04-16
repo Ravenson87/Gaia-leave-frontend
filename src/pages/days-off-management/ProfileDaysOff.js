@@ -148,7 +148,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
     ]
     const res = await createOvertimeHours(json)
     if (res.status === 200) {
-      setToastMessage('Successfully deleted');
+      setToastMessage('Successfully created');
       setShowToast(true)
       setUser(prev => ({
         ...prev,
@@ -313,7 +313,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
 
     try {
       const response = !userData?.userTotalAttendance?.total_free_days ? await createUserTotalAttendance(jsonData) : await updateUserTotalAttendance(jsonData, user?.userTotalAttendance?.id);
-      if (response.status === 201) {
+      if (response.status === 201 || 200) {
         setToastMessage(!userData?.userTotalAttendance?.total_free_days ? "Successfully created." : "Successfully updated.");
         setShowToast(true)
       } else {
