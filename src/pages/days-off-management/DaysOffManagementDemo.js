@@ -20,20 +20,193 @@ const StaffCalendar = ({month = new Date().getMonth() + 1, year = new Date().get
   const [overtimeData, setOvertimeData] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
+  const [statusTypes, setStatusTypes] = useState([]);
 
-  const statusTypes = [
-    {code: 'V', name: 'Vacation', color: '#28a745'},
-    {code: 'SL', name: 'Sick Leave', color: '#007bff'},
-    {code: 'DO', name: 'Day Off', color: '#6f42c1'},
-    {code: 'H', name: 'Holiday', color: '#fd7e14'},
-    {code: 'T', name: 'TOIL', color: '#e83e8c'},
-    {code: 'PH', name: 'Personal Holiday', color: '#20c997'}
+  const colors = [
+    '#28a745',
+    '#007bff',
+    '#6f42c1',
+    '#fd7e14',
+    '#e83e8c',
+    '#20c997',
+
+    '#dc3545',
+    '#ffc107',
+    '#17a2b8',
+    '#6c757d',
+    '#343a40',
+    '#8bc34a',
+    '#9c27b0',
+    '#ff5722',
+    '#2196f3',
+    '#795548',
+    '#607d8b',
+    '#ff9800',
+    '#4caf50',
+    '#3f51b5',
+    '#00bcd4',
+    '#f44336'
   ];
 
   useEffect(() => {
     fetchData();
+
+    fetchStatusTypes();
   }, []);
 
+  const toPastel = (hex) => {
+
+    hex = hex.replace(/^#/, '');
+    const r = parseInt(hex.slice(0, 2), 16) / 255;
+    const g = parseInt(hex.slice(2, 4), 16) / 255;
+    const b = parseInt(hex.slice(4, 6), 16) / 255;
+
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    s = 0.4;
+    l = 0.55;
+
+
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+
+    const r2 = hue2rgb(p, q, h + 1 / 3);
+    const g2 = hue2rgb(p, q, h);
+    const b2 = hue2rgb(p, q, h - 1 / 3);
+
+    const toHex = (x) => {
+      const hex = Math.round(x * 255).toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    };
+
+    return `#${toHex(r2)}${toHex(g2)}${toHex(b2)}`;
+  };
+
+
+  const pastelColors = colors.map(toPastel);
+
+  const generateColorPalette = (baseColor, count) => {
+    const palette = [];
+
+    const hexToHSL = (hex) => {
+
+      hex = hex.replace(/^#/, '');
+
+      const r = parseInt(hex.slice(0, 2), 16) / 255;
+      const g = parseInt(hex.slice(2, 4), 16) / 255;
+      const b = parseInt(hex.slice(4, 6), 16) / 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+        switch (max) {
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          case b:
+            h = (r - g) / d + 4;
+            break;
+        }
+
+        h /= 6;
+      }
+
+      return {h, s, l};
+    };
+
+    const baseHSL = hexToHSL(baseColor);
+
+    const hslToHex = (h, s, l) => {
+      let r, g, b;
+
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+      }
+
+      const toHex = (x) => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    for (let i = 0; i < count; i++) {
+      const hue = (baseHSL.h + i / count) % 1;
+      palette.push(hslToHex(hue, baseHSL.s, baseHSL.l));
+    }
+    return pastelColors.slice(0, count);
+  };
+
+  const baseColor = '#007bff';
+
+  const fetchStatusTypes = async () => {
+    try {
+      const response = await getFreeDayType();
+
+      const colorPalette = generateColorPalette(baseColor, response.data.length);
+      const mappedStatuses = response.data.map((status, index) => ({
+        code: status.type.toUpperCase().split(' ').map(w => w[0]).join(''),
+        name: status.type,
+        color: colorPalette[index % colorPalette.length],
+      }));
+
+      setStatusTypes(mappedStatuses);
+    } catch (err) {
+      console.error('Failed to fetch status types', err);
+    }
+  };
 
   const fetchData = () => {
     getUser().then((res) => {
@@ -143,21 +316,15 @@ const StaffCalendar = ({month = new Date().getMonth() + 1, year = new Date().get
   };
 
   const getStatusCode = (status) => {
-    if (!status) return "";
-    switch (status.type) {
-      case "unavailable":
-        return "DO";
-      case "sick leave":
-        return "SL";
-      case "vacation leave":
-        return "V";
-      case "toil":
-        return "T";
-      case "personal_holiday":
-        return "PH";
-      default:
-        return "";
-    }
+    if (!status || !status.type) return "";
+
+    const words = status.type
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .split(" ")
+      .filter(Boolean);
+
+    return words.map(w => w[0].toUpperCase()).slice(0, 2).join("");
   };
 
   const getUserInitials = (user) => {
@@ -364,11 +531,12 @@ const StaffCalendar = ({month = new Date().getMonth() + 1, year = new Date().get
       ) : (
         <>
           <ProfileDaysOff userData={selectedUser}
-                           freeDayTypes={freeDayTypes}
-                           jobPositionData={jobPositionData}
-                           roleData={roleData}
-                           calendarData={calendarData}
+                          freeDayTypes={freeDayTypes}
+                          jobPositionData={jobPositionData}
+                          roleData={roleData}
+                          calendarData={calendarData}
                           setVisible={setVisibleUser}
+                          get={fetchData}
           />
         </>
       )}

@@ -49,6 +49,7 @@ const UpdateUser = ({setUpdateModal, get, editData}) => {
                       roleData={roleData}
                       calendarData={calendarData}
                       setVisible={setUpdateModal}
+                      get={get}
       />
     </>
   );

@@ -24,7 +24,7 @@ import {
   subtractDaysFromFreeDays
 } from "../../api/day-off-management/dayOffManagement";
 
-function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, calendarData, setVisible}) {
+function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, calendarData, setVisible, get}) {
   const [activeTab, setActiveTab] = useState(0);
   const [overtimeEntry, setOvertimeEntry] = useState({
     date: '',
@@ -380,7 +380,10 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
         <Button
           variant="outline-light"
           size="sm"
-          onClick={() => setVisible(false)}
+          onClick={() => {
+            get()
+            setVisible(false)
+          }}
         >
           <i className="bi bi-x-lg me-1"></i>
           Close
