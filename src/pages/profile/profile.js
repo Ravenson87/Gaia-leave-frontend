@@ -9,11 +9,15 @@ import ImageUploadField from "./ImageUploadFile";
 import VacationBooking from "./VacationBooking";
 import {validatePassword} from "../../helper/validation/Validation";
 import {freeDaysBookingReadByUserId, getCalendar} from "../../api/day-off-management/dayOffManagement";
+import {setUser} from "../../state/slices/user/userSlice";
+import {useDispatch} from "react-redux";
 
 const UserProfile = () => {
   const cookies = new Cookies();
+  const dispatch = useDispatch();
 
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmedNewPassword, setShowConfirmedNewPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [superAdmin, setSuperAdmin] = useState(false);
@@ -79,7 +83,7 @@ const UserProfile = () => {
         } else {
           setPasswordFeedback({
             type: 'danger',
-            message: res?.response?.data?.message|| 'Failed to update password'
+            message: res?.response?.data?.message || 'Failed to update password'
           });
           setFormData({
             currentPassword: '',
@@ -136,7 +140,15 @@ const UserProfile = () => {
   function onImageChange(file) {
     const token = cookies.get('token')
     const jwtDecodeToken = jwtDecode(token);
-    updateUploadProfileImage(file, jwtDecodeToken?.id);
+    updateUploadProfileImage(file, jwtDecodeToken?.id).then((res) => {
+      if (jwtDecodeToken.role !== "super_admin") {
+        getUserById(jwtDecodeToken?.id).then((data) => {
+          setUserData(data.data)
+          dispatch(setUser(data.data));
+        })
+      }
+    })
+
   }
 
   const ProgressCircle = ({value, total, color, label, unit}) => {
@@ -539,7 +551,7 @@ const UserProfile = () => {
                           <Shield size={16} className="text-secondary"/>
                         </span>
                         <input
-                          type={showNewPassword ? "text" : "password"}
+                          type={showConfirmedNewPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
@@ -549,9 +561,9 @@ const UserProfile = () => {
                         <button
                           type="button"
                           className="btn btn-outline-secondary"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          onClick={() => setShowConfirmedNewPassword(!showConfirmedNewPassword)}
                         >
-                          {showNewPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                          {showConfirmedNewPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
                         </button>
                       </div>
                     </div>

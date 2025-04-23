@@ -18,6 +18,7 @@ import {AppBreadcrumb} from './index'
 import {AppHeaderDropdown} from './header/index'
 import {logo} from 'src/assets/brand/logo'
 import Cookies from "universal-cookie";
+import {setUser} from "../state/slices/user/userSlice";
 
 const AppHeader = () => {
   const dispatch = useDispatch();
@@ -28,6 +29,7 @@ const AppHeader = () => {
   function logout() {
     cookies.remove("token");
     cookies.remove("refresh_token");
+    dispatch(setUser(null));
     navigate('/login');
   }
 
@@ -59,7 +61,7 @@ const AppHeader = () => {
       </CContainer>
       <CHeaderDivider/>
       <CContainer fluid>
-        <AppBreadcrumb/>
+        {/*<AppBreadcrumb/>*/}
       </CContainer>
     </CHeader>
   )

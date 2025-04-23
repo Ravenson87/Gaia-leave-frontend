@@ -31,8 +31,11 @@ import DocumentList from "./developer-dashboard-user/document";
 import SetWorkingParameters from "./developer-dashboard-user/userTotalAttendance";
 import {getJobPosition} from "../../../api/jobPosition";
 import EmailForwardingInterface from "./developer-dashboard-user/email";
+import {useSelector} from "react-redux";
 
 const User = () => {
+  const currentUser = useSelector((state) => state.currentUser.currentUser);
+
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [advancedSearch, setAdvancedSearch] = useState({
@@ -288,11 +291,13 @@ const User = () => {
                                     <EditIcon/>
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="Delete">
-                                  <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
-                                    <DeleteIcon/>
-                                  </IconButton>
-                                </Tooltip>
+                                {user.id !== currentUser.id && (
+                                  <Tooltip title="Delete">
+                                    <IconButton color="error" onClick={() => handleDeleteClick(user.id)}>
+                                      <DeleteIcon/>
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
 
                                 {/*<Tooltip title="Delete">*/}
                                 {/*  <IconButton color="error" onClick={() => {*/}

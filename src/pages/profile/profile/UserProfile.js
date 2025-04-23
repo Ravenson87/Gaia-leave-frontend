@@ -4,6 +4,7 @@ import {Briefcase, Calendar, Camera, Check, Mail, Pencil, Phone, ToggleLeft, Tog
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/bootstrap.css';
 import {updateUser, updateUserStatus} from "../../../api/user";
+import {useSelector} from "react-redux";
 
 const UserProfile = ({
                        user,
@@ -17,6 +18,8 @@ const UserProfile = ({
                        setToastMessage,
                        setShowToast
                      }) => {
+  const currentUser = useSelector((state) => state.currentUser.currentUser);
+
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [errors, setErrors] = useState({});
   const [localUser, setLocalUser] = useState(null);
@@ -284,31 +287,33 @@ const UserProfile = ({
             <h3 className="fw-bold mb-1">{localUser?.first_name} {localUser?.last_name}</h3>
             <p className="text-muted mb-3">{localUser?.role?.name || getRoleName(localUser?.role_id)}</p>
 
-            <div className="border rounded-3 p-3 mb-2">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <div className={`bg-${localUser?.status ? 'success' : 'danger'} rounded-circle me-2 p-1`}>
-                    <div className="bg-white rounded-circle" style={{width: '6px', height: '6px'}}></div>
-                  </div>
-                  <span className="fw-medium">Account Status:</span>
-                  <span className={`ms-2 badge ${localUser?.status ? 'bg-success' : 'bg-danger'}`}>
+            {localUser.id !== currentUser?.id && (
+              <div className="border rounded-3 p-3 mb-2">
+                <div className="d-flex align-items-center justify-content-between">
+                  <div className="d-flex align-items-center">
+                    <div className={`bg-${localUser?.status ? 'success' : 'danger'} rounded-circle me-2 p-1`}>
+                      <div className="bg-white rounded-circle" style={{width: '6px', height: '6px'}}></div>
+                    </div>
+                    <span className="fw-medium">Account Status:</span>
+                    <span className={`ms-2 badge ${localUser?.status ? 'bg-success' : 'bg-danger'}`}>
                     {localUser?.status ? 'Active' : 'Inactive'}
                   </span>
+                  </div>
+                  <Button
+                    variant={localUser?.status ? "outline-danger" : "outline-success"}
+                    size="sm"
+                    className="rounded-pill px-3 d-flex align-items-center"
+                    onClick={handleStatusToggle}
+                    aria-label={localUser?.status ? "Deactivate user" : "Activate user"}
+                  >
+                    {localUser?.status ?
+                      <><ToggleRight size={18} className="me-1"/> Deactivate</> :
+                      <><ToggleLeft size={18} className="me-1"/> Activate</>
+                    }
+                  </Button>
                 </div>
-                <Button
-                  variant={localUser?.status ? "outline-danger" : "outline-success"}
-                  size="sm"
-                  className="rounded-pill px-3 d-flex align-items-center"
-                  onClick={handleStatusToggle}
-                  aria-label={localUser?.status ? "Deactivate user" : "Activate user"}
-                >
-                  {localUser?.status ?
-                    <><ToggleRight size={18} className="me-1"/> Deactivate</> :
-                    <><ToggleLeft size={18} className="me-1"/> Activate</>
-                  }
-                </Button>
               </div>
-            </div>
+            )}
           </Card.Body>
         </Card>
       </div>

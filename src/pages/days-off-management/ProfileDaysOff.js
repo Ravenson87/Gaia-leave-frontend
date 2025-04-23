@@ -271,7 +271,7 @@ function ProfileDaysOff({userData, freeDayTypes, jobPositionData, roleData, cale
 
   const formatDate = (dateString) => {
     const options = {year: 'numeric', month: 'long', day: 'numeric'};
-    return new Date(dateString).toLocaleDateString('sr-RS', options);
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   const handleAddFreeDays = () => {
