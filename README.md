@@ -85,4 +85,4 @@ yarn build
 
 The optimized build will be stored in the build/ directory.
 
-### Developed and maintained by Minja and Siniša
+Developed and maintained by Minja and Siniša
