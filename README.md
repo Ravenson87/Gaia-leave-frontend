@@ -11,17 +11,17 @@ Language: JavaScript (ES6+)
 
 ### Framework: React 18
 
-## Build Tool: npm / yarn
+### Build Tool: npm / yarn
 
-## UI Library: CoreUI React
+### UI Library: CoreUI React
 
-## Routing: React Router
+### Routing: React Router
 
-## State Management: Redux Toolkit
+### State Management: Redux Toolkit
 
-## Styling: SCSS
+### Styling: SCSS
 
-## Project Structure
+### Project Structure
 
 ```
 gaia-leave-frontend
@@ -43,7 +43,7 @@ gaia-leave-frontend
 └── package.json
 
 ```
-## Getting Started
+### Getting Started
 
 Ensure you have Node.js  (>=18) installed
 
@@ -85,4 +85,4 @@ yarn build
 
 The optimized build will be stored in the build/ directory.
 
-Developed and maintained by Minja and Siniša
+### Developed and maintained by Minja and Siniša
