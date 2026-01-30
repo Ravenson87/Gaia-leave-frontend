@@ -1,4 +1,4 @@
-# gaia_leave
+# gaia_leave-frontend
 
 - Workforce management system
 
@@ -6,10 +6,10 @@
 
 GaiaLeave frontend is a React application that provides a modern user interface for managing employee attendance, leave requests, and overtime records. It connects to the Spring Boot backend and offers secure, role‑based access with intuitive forms and dashboards. In addition to tracking absences, the frontend enables HR personnel, managers, and employees to monitor working hours, approve overtime, and view payroll‑related information through interactive dashboards.
 
-## Technology Stack
+### Technology Stack
 Language: JavaScript (ES6+)
 
-## Framework: React 18
+### Framework: React 18
 
 ## Build Tool: npm / yarn
 
